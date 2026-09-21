@@ -19,108 +19,108 @@ class AdminDashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.surfaceLight,
-      body: CustomScrollView(
-        slivers: [
-          // ── Premium Admin Header ──────────────────────────────────
-          SliverAppBar(
-            expandedHeight: 210,
-            floating: false,
-            pinned: true,
-            backgroundColor: AppTheme.primaryColor,
-            foregroundColor: Colors.white,
-            actions: [
-              IconButton(
-                icon: Container(
-                  padding: const EdgeInsets.all(7),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.logout_outlined,
-                      color: Colors.white, size: 18),
-                ),
-                tooltip: 'Logout',
-                onPressed: () async {
-                  await ref.read(authProvider.notifier).logout();
-                  if (context.mounted) context.go('/login');
-                },
-              ),
-              const SizedBox(width: 8),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding:
-                  const EdgeInsetsDirectional.only(start: 20, bottom: 16),
-              title: GreetingHeader(
-                name: displayName,
-                subtitle: 'OM Finance Admin Panel',
-                role: '👑 ADMIN',
-              ),
-              background: Container(
-                decoration:
-                    const BoxDecoration(gradient: AppTheme.primaryGradient),
-                child: Stack(
-                  children: [
-                    // Decorative circles
-                    Positioned(
-                      right: -40,
-                      top: -30,
-                      child: CircleAvatar(
-                        radius: 100,
-                        backgroundColor: Colors.white.withOpacity(0.06),
-                      ),
-                    ),
-                    Positioned(
-                      right: 60,
-                      bottom: -50,
-                      child: CircleAvatar(
-                        radius: 60,
-                        backgroundColor: Colors.white.withOpacity(0.04),
-                      ),
-                    ),
-                    Positioned(
-                      left: -25,
-                      top: 20,
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Colors.white.withOpacity(0.04),
-                      ),
-                    ),
-                    // Crown emoji watermark
-                    Positioned(
-                      right: 28,
-                      top: 28,
-                      child: Text(
-                        '👑',
-                        style: TextStyle(
-                          fontSize: 52,
-                          color: Colors.white.withOpacity(0.15),
-                        ),
-                      ),
-                    ),
-                  ],
+      appBar: AppBar(
+        backgroundColor: AppTheme.primaryColor,
+        elevation: 0,
+        centerTitle: false,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/images/logo.png',
+                width: 32,
+                height: 32,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.account_balance,
+                  color: Colors.white,
+                  size: 24,
                 ),
               ),
             ),
           ),
-
-          // ── Content ───────────────────────────────────────────────
-          SliverFillRemaining(
-            hasScrollBody: true,
-            child: RefreshIndicator(
-              color: AppTheme.primaryColor,
-              onRefresh: () async => ref.refresh(adminSummaryProvider),
-              child: summaryAsync.when(
-                loading: () => const LoadingView(),
-                error: (err, _) => ErrorView(
-                  message: err.toString(),
-                  onRetry: () => ref.refresh(adminSummaryProvider),
+        ),
+        title: const Text(
+          'OM Finance',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+            letterSpacing: 0.5,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.18),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.refresh_rounded,
+                  color: Colors.white, size: 18),
+            ),
+            tooltip: 'Refresh',
+            onPressed: () => ref.refresh(adminSummaryProvider),
+          ),
+          IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.18),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.logout_outlined,
+                  color: Colors.white, size: 18),
+            ),
+            tooltip: 'Logout',
+            onPressed: () async {
+              await ref.read(authProvider.notifier).logout();
+              if (context.mounted) context.go('/login');
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: RefreshIndicator(
+        color: AppTheme.primaryColor,
+        onRefresh: () async => ref.refresh(adminSummaryProvider),
+        child: summaryAsync.when(
+          loading: () => const LoadingView(),
+          error: (err, _) => ErrorView(
+            message: err.toString(),
+            onRetry: () => ref.refresh(adminSummaryProvider),
+          ),
+          data: (summary) => ListView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            children: [
+              // ── Top Greeting Card ────────────────────────────
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  gradient: AppTheme.primaryGradient,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withOpacity(0.28),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                data: (summary) => ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-                  children: [
-                    // ── Today's Summary Banner ───────────────────────
-                    _TodaySummaryBanner(summary: summary),
-                    const SizedBox(height: 20),
+                child: GreetingHeader(
+                  name: displayName,
+                  subtitle: 'OM Finance Admin Panel',
+                  role: '👑 ADMIN',
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // ── Today's Summary Banner ───────────────────────
+              _TodaySummaryBanner(summary: summary),
+              const SizedBox(height: 20),
 
                     // ── Stat Cards Grid (with emojis) ─────────────────
                     const _SectionTitle('Overview'),
@@ -182,9 +182,6 @@ class AdminDashboardScreen extends ConsumerWidget {
                 ),
               ),
             ),
-          ),
-        ],
-      ),
     );
   }
 }

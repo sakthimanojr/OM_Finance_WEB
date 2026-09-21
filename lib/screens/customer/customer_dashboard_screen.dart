@@ -18,97 +18,108 @@ class CustomerDashboardScreen extends ConsumerWidget {
     final displayName = user?.phone ?? 'Customer';
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          // ── Premium Customer Header ───────────────────────────────
-          SliverAppBar(
-            expandedHeight: 200,
-            floating: false,
-            pinned: true,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.person_outline, color: Colors.white),
-                tooltip: 'My Profile',
-                onPressed: () => context.push('/customer/profile'),
-              ),
-              IconButton(
-                icon: const Icon(Icons.logout_outlined, color: Colors.white),
-                tooltip: 'Logout',
-                onPressed: () async {
-                  await ref.read(authProvider.notifier).logout();
-                  if (context.mounted) context.go('/login');
-                },
-              ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding:
-                  const EdgeInsetsDirectional.only(start: 20, bottom: 16),
-              title: GreetingHeader(
-                name: displayName,
-                subtitle: 'Your financial dashboard',
-              ),
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: AppTheme.customerGradient,
-                ),
-                child: Stack(
-                  children: [
-                    Positioned(
-                      right: -35,
-                      top: -25,
-                      child: CircleAvatar(
-                        radius: 85,
-                        backgroundColor: Colors.white.withOpacity(0.07),
-                      ),
-                    ),
-                    Positioned(
-                      left: -20,
-                      bottom: -25,
-                      child: CircleAvatar(
-                        radius: 65,
-                        backgroundColor: Colors.white.withOpacity(0.05),
-                      ),
-                    ),
-                    Positioned(
-                      right: 80,
-                      top: 30,
-                      child: CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.white.withOpacity(0.04),
-                      ),
-                    ),
-                    // Wallet emoji watermark
-                    Positioned(
-                      right: 24,
-                      top: 24,
-                      child: Text(
-                        '💳',
-                        style: TextStyle(
-                          fontSize: 48,
-                          color: Colors.white.withOpacity(0.18),
-                        ),
-                      ),
-                    ),
-                  ],
+      backgroundColor: AppTheme.surfaceLight,
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0D9488), // Teal-green brand
+        elevation: 0,
+        centerTitle: false,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/images/logo.png',
+                width: 32,
+                height: 32,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.account_balance,
+                  color: Colors.white,
+                  size: 24,
                 ),
               ),
             ),
           ),
-          SliverFillRemaining(
-            hasScrollBody: true,
-            child: RefreshIndicator(
-              onRefresh: () async => ref.refresh(customerSummaryProvider),
-              child: summaryAsync.when(
-                loading: () => const LoadingView(),
-                error: (err, _) => ErrorView(
-                  message: err.toString(),
-                  onRetry: () => ref.refresh(customerSummaryProvider),
+        ),
+        title: const Text(
+          'OM Finance',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+            letterSpacing: 0.5,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.18),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.person_outline,
+                  color: Colors.white, size: 18),
+            ),
+            tooltip: 'My Profile',
+            onPressed: () => context.push('/customer/profile'),
+          ),
+          IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.18),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.logout_outlined,
+                  color: Colors.white, size: 18),
+            ),
+            tooltip: 'Logout',
+            onPressed: () async {
+              await ref.read(authProvider.notifier).logout();
+              if (context.mounted) context.go('/login');
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: RefreshIndicator(
+        color: const Color(0xFF0D9488),
+        onRefresh: () async => ref.refresh(customerSummaryProvider),
+        child: summaryAsync.when(
+          loading: () => const LoadingView(),
+          error: (err, _) => ErrorView(
+            message: err.toString(),
+            onRetry: () => ref.refresh(customerSummaryProvider),
+          ),
+          data: (summary) => ListView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            children: [
+              // ── Top Greeting Card ────────────────────────────
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  gradient: AppTheme.customerGradient,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0D9488).withOpacity(0.28),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                data: (summary) => ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-                  children: [
-                    // ── Outstanding hero card ──────────────────────────
-                    Container(
+                child: GreetingHeader(
+                  name: displayName,
+                  subtitle: 'Your financial dashboard',
+                  role: '👤 CUSTOMER',
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // ── Outstanding hero card ──────────────────────────
+              Container(
                       decoration: AppTheme.customerHeroCardDecoration,
                       child: Padding(
                         padding: const EdgeInsets.all(24),
@@ -279,9 +290,6 @@ class CustomerDashboardScreen extends ConsumerWidget {
                 ),
               ),
             ),
-          ),
-        ],
-      ),
     );
   }
 }
