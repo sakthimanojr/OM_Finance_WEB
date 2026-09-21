@@ -7,6 +7,7 @@ import '../../core/widgets/premium_widgets.dart';
 import '../../core/widgets/state_views.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
+import '../../core/network/api_client.dart';
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
@@ -19,71 +20,6 @@ class AdminDashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.surfaceLight,
-      appBar: AppBar(
-        backgroundColor: AppTheme.primaryColor,
-        elevation: 0,
-        centerTitle: false,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 12),
-          child: Center(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                'assets/images/logo.png',
-                width: 32,
-                height: 32,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(
-                  Icons.account_balance,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-            ),
-          ),
-        ),
-        title: const Text(
-          'OM Finance',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-            fontSize: 18,
-            letterSpacing: 0.5,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.18),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.refresh_rounded,
-                  color: Colors.white, size: 18),
-            ),
-            tooltip: 'Refresh',
-            onPressed: () => ref.refresh(adminSummaryProvider),
-          ),
-          IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.18),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.logout_outlined,
-                  color: Colors.white, size: 18),
-            ),
-            tooltip: 'Logout',
-            onPressed: () async {
-              await ref.read(authProvider.notifier).logout();
-              if (context.mounted) context.go('/login');
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
       body: RefreshIndicator(
         color: AppTheme.primaryColor,
         onRefresh: () async => ref.refresh(adminSummaryProvider),
@@ -93,9 +29,81 @@ class AdminDashboardScreen extends ConsumerWidget {
             message: err.toString(),
             onRetry: () => ref.refresh(adminSummaryProvider),
           ),
-          data: (summary) => ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-            children: [
+          data: (summary) => CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                backgroundColor: AppTheme.primaryColor,
+                elevation: 0,
+                pinned: true,
+                floating: false,
+                snap: false,
+                toolbarHeight: 56,
+                centerTitle: false,
+                leading: Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 32,
+                        height: 32,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.account_balance,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                title: const Text(
+                  'OM Finance',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                actions: [
+                  IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.18),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.refresh_rounded,
+                          color: Colors.white, size: 18),
+                    ),
+                    tooltip: 'Refresh',
+                    onPressed: () => ref.refresh(adminSummaryProvider),
+                  ),
+                  IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.18),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.logout_outlined,
+                          color: Colors.white, size: 18),
+                    ),
+                    tooltip: 'Logout',
+                    onPressed: () async {
+                      await ref.read(authProvider.notifier).logout();
+                      if (context.mounted) context.go('/login');
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                ],
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
               // ── Top Greeting Card ────────────────────────────
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -174,14 +182,17 @@ class AdminDashboardScreen extends ConsumerWidget {
                     _PortfolioCard(summary: summary),
                     const SizedBox(height: 24),
 
-                    // ── Quick Actions — Emoji Grid ─────────────────────
+                     // ── Quick Actions — Emoji Grid ─────────────────────
                     const _SectionTitle('Management Actions'),
                     const SizedBox(height: 14),
                     _QuickActionsGrid(user: user, context: context),
-                  ],
+                  ]),
                 ),
               ),
-            ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -528,13 +539,20 @@ class _QuickActionsGrid extends StatelessWidget {
           color: AppTheme.textMuted,
           onTap: () => context.push('/admin/audit-logs'),
         ),
-        if (user?.isSuperAdmin == true)
+        if (user?.isSuperAdmin == true) ...[
           _QuickActionCard(
             emoji: '⚙️',
             label: 'Admin Mgmt',
             color: AppTheme.primaryDark,
             onTap: () => context.push('/admin/management'),
           ),
+          _QuickActionCard(
+            emoji: '📥',
+            label: 'Import CSV',
+            color: const Color(0xFF0D9488),
+            onTap: () => _confirmAndImportLoans(context),
+          ),
+        ],
         _QuickActionCard(
           emoji: '🗂️',
           label: 'Closed Loans',
@@ -543,6 +561,87 @@ class _QuickActionsGrid extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  static Future<void> _confirmAndImportLoans(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Text('📥 ', style: TextStyle(fontSize: 22)),
+            Text('Import 97 Legacy Loans'),
+          ],
+        ),
+        content: const Text(
+          'This will import all 97 customer and loan records from the verified CSV directly into your live database. Already imported loans will be safely skipped.',
+          style: TextStyle(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0D9488),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Import Now', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            ),
+            SizedBox(width: 12),
+            Text('Importing 97 loans into database...'),
+          ],
+        ),
+        duration: Duration(seconds: 15),
+      ),
+    );
+
+    try {
+      final response = await ApiClient.instance.client.post('/admin/import-legacy-loans');
+      final data = response.data['data'];
+      final imported = data?['importedCount'] ?? 97;
+      final skipped = data?['skippedCount'] ?? 0;
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppTheme.successColor,
+            content: Text('✅ Successfully imported $imported loans ($skipped skipped)! Refreshing...'),
+          ),
+        );
+        // Navigate or refresh
+        context.go('/admin/dashboard');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppTheme.errorColor,
+            content: Text('Import failed: $e'),
+          ),
+        );
+      }
+    }
   }
 }
 

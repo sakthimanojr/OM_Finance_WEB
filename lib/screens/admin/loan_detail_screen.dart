@@ -7,6 +7,8 @@ import '../../core/widgets/state_views.dart';
 import '../../core/widgets/status_badge.dart';
 import '../../providers/loan_provider.dart';
 import '../../services/payment_service.dart';
+import '../../providers/customer_provider.dart';
+import 'edit_loan_dialog.dart';
 
 class LoanDetailScreen extends ConsumerWidget {
   const LoanDetailScreen({super.key, required this.loanId});
@@ -22,7 +24,27 @@ class LoanDetailScreen extends ConsumerWidget {
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
         title: const Text('Loan Details', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+        actions: [
+          loanAsync.maybeWhen(
+            data: (loan) => loan.status != 'CLOSED' && loan.status != 'COMPLETED'
+                ? IconButton(
+                    icon: const Icon(Icons.edit_note_rounded),
+                    tooltip: 'Edit Loan Amount',
+                    onPressed: () async {
+                      final updated = await EditLoanDialog.show(context, loan);
+                      if (updated == true) {
+                        ref.invalidate(loanDetailProvider(loanId));
+                        ref.invalidate(loanListProvider(loan.customerId));
+                        ref.invalidate(customerDetailProvider(loan.customerId));
+                      }
+                    },
+                  )
+                : const SizedBox.shrink(),
+            orElse: () => const SizedBox.shrink(),
+          ),
+        ],
       ),
+
       body: loanAsync.when(
         loading: () => const LoadingView(),
         error: (err, _) => ErrorView(

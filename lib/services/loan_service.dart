@@ -82,4 +82,31 @@ class LoanService {
       throw ApiException.fromDioError(e);
     }
   }
+
+  Future<Loan> updateLoan({
+
+    required String loanId,
+    num? principal,
+    num? interestRate,
+    num? agreementFee,
+    int? termCount,
+    DateTime? startDate,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        '${ApiConstants.loans}/$loanId',
+        data: {
+          if (principal != null) 'principal': principal,
+          if (interestRate != null) 'interestRate': interestRate,
+          if (agreementFee != null) 'agreementFee': agreementFee,
+          if (termCount != null) 'termCount': termCount,
+          if (startDate != null) 'startDate': startDate.toIso8601String(),
+        },
+      );
+      return Loan.fromJson(response.data['data'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
 }
+

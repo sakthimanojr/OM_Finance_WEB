@@ -14,7 +14,7 @@ class CustomerService {
           if (search != null && search.isNotEmpty) 'search': search,
           if (status != null) 'status': status,
           'page': page,
-          'limit': 20,
+          'limit': 200,
         },
       );
       final list = response.data['data'] as List<dynamic>;

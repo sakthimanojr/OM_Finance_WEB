@@ -48,6 +48,13 @@ class ApiConstants {
   static const String reportsCollections = '/reports/collections';
   static const String reportsLoanPortfolio = '/reports/loan-portfolio';
   static const String reportsOverdue = '/reports/overdue';
+  // Interactive JSON reports
+  static const String reportsMonthlyCollections = '/reports/monthly-collections';
+  static const String reportsLoanPortfolioJson = '/reports/loan-portfolio-json';
+  static const String reportsInterestProfit = '/reports/interest-profit';
+  static const String reportsOverdueDetail = '/reports/overdue-detail';
+  static const String reportsDisbursementSummary = '/reports/disbursement-summary';
+
 
   // Dashboard
   static const String dashboardAdminSummary = '/dashboard/admin-summary';

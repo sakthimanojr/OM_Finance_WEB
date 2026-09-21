@@ -8,6 +8,9 @@ import '../../core/widgets/status_badge.dart';
 import '../../providers/customer_provider.dart';
 import '../../providers/loan_provider.dart';
 import '../shared/documents_section.dart';
+import 'edit_customer_screen.dart';
+import 'edit_loan_dialog.dart';
+
 
 class CustomerDetailScreen extends ConsumerWidget {
   const CustomerDetailScreen({super.key, required this.customerId});
@@ -23,11 +26,31 @@ class CustomerDetailScreen extends ConsumerWidget {
         title: const Text('Customer Profile'),
         actions: [
           customerAsync.maybeWhen(
-            data: (customer) => IconButton(
-              icon: const Icon(Icons.notifications_outlined),
-              tooltip: 'Notification History',
-              onPressed: () => context.push(
-                  '/admin/customers/$customerId/notifications?name=${Uri.encodeComponent(customer.name)}'),
+            data: (customer) => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  tooltip: 'Edit Customer',
+                  onPressed: () async {
+                    final updated = await Navigator.of(context).push<bool>(
+                      MaterialPageRoute(
+                        builder: (_) => EditCustomerScreen(customer: customer),
+                      ),
+                    );
+                    if (updated == true) {
+                      ref.invalidate(customerDetailProvider(customerId));
+                      ref.invalidate(loanListProvider(customerId));
+                    }
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.notifications_outlined),
+                  tooltip: 'Notification History',
+                  onPressed: () => context.push(
+                      '/admin/customers/$customerId/notifications?name=${Uri.encodeComponent(customer.name)}'),
+                ),
+              ],
             ),
             orElse: () => const SizedBox.shrink(),
           ),
@@ -179,6 +202,29 @@ class CustomerDetailScreen extends ConsumerWidget {
                       ],
                     ),
                     const Divider(height: 24),
+                    if (customer.email == null &&
+                        customer.fatherName == null &&
+                        customer.address == null &&
+                        customer.aadhaarLast4 == null &&
+                        customer.pan == null &&
+                        customer.occupation == null &&
+                        customer.monthlyIncome == null &&
+                        customer.guarantorName == null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          children: [
+                            Icon(Icons.info_outline,
+                                size: 16, color: Colors.grey.shade400),
+                            const SizedBox(width: 8),
+                            Text(
+                              'No additional information available',
+                              style: TextStyle(
+                                  color: Colors.grey.shade400, fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      ),
                     if (customer.email != null)
                       _infoRow('Email', customer.email!),
                     if (customer.fatherName != null)
@@ -267,7 +313,26 @@ class CustomerDetailScreen extends ConsumerWidget {
                                     color: Colors.grey.shade500,
                                     fontSize: 12),
                               ),
-                              trailing: StatusBadge(status: loan.status),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  StatusBadge(status: loan.status),
+                                  if (loan.status != 'CLOSED' && loan.status != 'COMPLETED') ...[
+                                    const SizedBox(width: 4),
+                                    IconButton(
+                                      icon: const Icon(Icons.edit_note_rounded, color: AppTheme.primaryColor),
+                                      tooltip: 'Edit Loan Amount',
+                                      onPressed: () async {
+                                        final updated = await EditLoanDialog.show(context, loan);
+                                        if (updated == true) {
+                                          ref.invalidate(customerDetailProvider(customerId));
+                                          ref.invalidate(loanListProvider(customerId));
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ],
+                              ),
                               onTap: () => context
                                   .push('/admin/loans/${loan.id}'),
                             ),
@@ -275,6 +340,7 @@ class CustomerDetailScreen extends ConsumerWidget {
                         )
                         .toList(),
                   );
+
                 },
               ),
             ],
