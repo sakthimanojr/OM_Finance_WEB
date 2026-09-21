@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+
 # Clone Flutter stable SDK if not already cached
 if [ ! -d "flutter" ]; then
   echo "Cloning Flutter SDK (stable)..."
@@ -8,12 +10,15 @@ fi
 # Add Flutter to PATH
 export PATH="$PATH:`pwd`/flutter/bin"
 
-# Verify Flutter installation
-flutter --version
-
-# Enable Web and install packages
+# Enable web support & configure platform
+echo "Configuring Flutter for Web..."
 flutter config --enable-web
+flutter create . --platforms web
+
+# Install dependencies
+echo "Getting dependencies..."
 flutter pub get
 
 # Build production web bundle
+echo "Building Web Release..."
 flutter build web --release --base-href "/"
