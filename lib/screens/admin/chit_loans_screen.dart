@@ -711,6 +711,7 @@ class _ChitLoanDetailScreenState extends ConsumerState<ChitLoanDetailScreen> {
     final iCtrl = TextEditingController(text: interestRemaining.toStringAsFixed(2));
     final refCtrl = TextEditingController();
     String method = 'CASH';
+    DateTime paidDate = DateTime.now();
 
     if (!context.mounted) return;
     await showDialog(
@@ -743,11 +744,35 @@ class _ChitLoanDetailScreenState extends ConsumerState<ChitLoanDetailScreen> {
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 value: method,
-                decoration: const InputDecoration(labelText: 'Method'),
+                decoration: const InputDecoration(labelText: 'Payment Method'),
                 items: ['CASH', 'UPI', 'BANK_TRANSFER', 'MANUAL']
                     .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                     .toList(),
                 onChanged: (v) => setDlg(() => method = v!),
+              ),
+              const SizedBox(height: 8),
+              InkWell(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: ctx,
+                    initialDate: paidDate,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime.now().add(const Duration(days: 365)),
+                    helpText: 'Select Repayment Date',
+                  );
+                  if (picked != null) setDlg(() => paidDate = picked);
+                },
+                child: InputDecorator(
+                  decoration: const InputDecoration(
+                    labelText: 'Paid Date',
+                    prefixIcon: Icon(Icons.calendar_today_outlined, size: 18),
+                    suffixIcon: Icon(Icons.arrow_drop_down),
+                  ),
+                  child: Text(
+                    DateFormat('dd MMM yyyy').format(paidDate),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                ),
               ),
             ],
           ),
@@ -763,6 +788,7 @@ class _ChitLoanDetailScreenState extends ConsumerState<ChitLoanDetailScreen> {
                         interestAmount: num.tryParse(iCtrl.text) ?? 0,
                         paymentReference: refCtrl.text.isEmpty ? null : refCtrl.text,
                         paymentMethod: method,
+                        transactionDate: paidDate,
                       );
                   ref.invalidate(chitLoanListProvider(widget.chitId));
                   ref.invalidate(chitFundSummaryProvider(widget.chitId));

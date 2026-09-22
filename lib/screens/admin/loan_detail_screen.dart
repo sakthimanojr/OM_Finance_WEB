@@ -516,8 +516,8 @@ class LoanDetailScreen extends ConsumerWidget {
                     context: context,
                     initialDate: paidDate,
                     firstDate: DateTime(2020),
-                    lastDate: DateTime.now(),
-                    helpText: 'Select Payment Date',
+                    lastDate: DateTime.now().add(const Duration(days: 365)),
+                    helpText: 'Select Paid Date',
                   );
                   if (picked != null) setSheetState(() => paidDate = picked);
                 },
@@ -531,11 +531,11 @@ class LoanDetailScreen extends ConsumerWidget {
                     children: [
                       const Icon(Icons.calendar_today_outlined, size: 18, color: AppTheme.primaryColor),
                       const SizedBox(width: 10),
-                      const Text('Payment Date',
+                      const Text('Paid Date',
                           style: TextStyle(color: Colors.grey, fontSize: 13)),
                       const Spacer(),
                       Text(
-                        '${paidDate.day.toString().padLeft(2,'0')}/${paidDate.month.toString().padLeft(2,'0')}/${paidDate.year}',
+                        '${paidDate.day.toString().padLeft(2, '0')}/${paidDate.month.toString().padLeft(2, '0')}/${paidDate.year}',
                         style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                       ),
                       const SizedBox(width: 4),

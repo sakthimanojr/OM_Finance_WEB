@@ -49,6 +49,7 @@ class _ChitMonthlyPaymentsScreenState extends ConsumerState<ChitMonthlyPaymentsS
     }
 
     String monthId = _selectedMonthId ?? openMonths.last.id;
+    DateTime paidDate = DateTime.now();
 
     await showDialog(
       context: context,
@@ -85,11 +86,35 @@ class _ChitMonthlyPaymentsScreenState extends ConsumerState<ChitMonthlyPaymentsS
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: method,
-                  decoration: const InputDecoration(labelText: 'Method'),
+                  decoration: const InputDecoration(labelText: 'Payment Method'),
                   items: ['CASH', 'UPI', 'BANK_TRANSFER', 'MANUAL']
                       .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                       .toList(),
                   onChanged: (v) => setDlgState(() => method = v!),
+                ),
+                const SizedBox(height: 12),
+                InkWell(
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: ctx,
+                      initialDate: paidDate,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                      helpText: 'Select Payment Date',
+                    );
+                    if (picked != null) setDlgState(() => paidDate = picked);
+                  },
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      labelText: 'Paid Date',
+                      prefixIcon: Icon(Icons.calendar_today_outlined, size: 18),
+                      suffixIcon: Icon(Icons.arrow_drop_down),
+                    ),
+                    child: Text(
+                      DateFormat('dd MMM yyyy').format(paidDate),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -107,6 +132,7 @@ class _ChitMonthlyPaymentsScreenState extends ConsumerState<ChitMonthlyPaymentsS
                         monthId: monthId,
                         amountPaid: num.parse(amtCtrl.text),
                         paymentMethod: method,
+                        paidDate: paidDate,
                       );
                   ref.invalidate(chitPaymentListProvider(widget.chitId));
                   if (context.mounted) {
