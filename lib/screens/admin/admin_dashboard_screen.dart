@@ -289,16 +289,16 @@ class _FinancialSummaryBanner extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Financial Summary',
+                        'Summary',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 17,
+                          fontSize: 18,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.2,
                         ),
                       ),
                       Text(
-                        'Disbursed, collections & interest profit breakout',
+                        'Disbursed, collected back & interest profit breakout',
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.70),
                           fontSize: 11,
@@ -344,6 +344,53 @@ class _FinancialSummaryBanner extends StatelessWidget {
                   ),
                 ],
               ),
+              if (summary.totalDisbursed > 0) ...[
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: AppTheme.glassmorphismCard(
+                    opacity: 0.12,
+                    borderOpacity: 0.18,
+                    radius: 12,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Overall Collected from Disbursed',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            '${((summary.totalCollected / summary.totalDisbursed) * 100).clamp(0, 100).toStringAsFixed(1)}% recovered',
+                            style: const TextStyle(
+                              color: AppTheme.accentLime,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: (summary.totalCollected / summary.totalDisbursed).clamp(0.0, 1.0).toDouble(),
+                          backgroundColor: Colors.white.withValues(alpha: 0.20),
+                          valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accentLime),
+                          minHeight: 6,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),

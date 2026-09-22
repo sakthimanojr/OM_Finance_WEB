@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
+import '../../core/constants/api_constants.dart';
+import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/state_views.dart';
@@ -18,12 +23,38 @@ class LoanListScreen extends ConsumerStatefulWidget {
 }
 
 class _LoanListScreenState extends ConsumerState<LoanListScreen> {
+  bool _isDownloading = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(loanStatusFilterProvider.notifier).state = widget.status;
     });
+  }
+
+  Future<void> _downloadExcel() async {
+    setState(() => _isDownloading = true);
+    try {
+      final dir = await getTemporaryDirectory();
+      final savePath = '${dir.path}/loan-portfolio-report.xlsx';
+      await ApiClient.instance.client.download(ApiConstants.reportsLoanPortfolio, savePath);
+      await OpenFilex.open(savePath);
+    } on DioException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Download failed: ${e.message}'), backgroundColor: AppTheme.errorColor),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.errorColor),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isDownloading = false);
+    }
   }
 
   Color _statusColor(String status) {
@@ -35,6 +66,8 @@ class _LoanListScreenState extends ConsumerState<LoanListScreen> {
         return AppTheme.errorColor;
       case 'COMPLETED':
         return AppTheme.successColor;
+      case 'CLOSED':
+        return Colors.blueGrey;
       default:
         return AppTheme.textMuted;
     }
@@ -51,9 +84,33 @@ class _LoanListScreenState extends ConsumerState<LoanListScreen> {
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
         title: Text(
-          currentFilter == 'ACTIVE' ? 'Active Loans' : 'All Loans',
+          currentFilter == 'ACTIVE'
+              ? 'Active Loans'
+              : (currentFilter == 'CLOSED'
+                  ? 'Closed Loans'
+                  : (currentFilter == 'OVERDUE'
+                      ? 'Overdue Loans'
+                      : 'All Active Loans')),
           style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Export Portfolio to Excel',
+            icon: _isDownloading
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : const Icon(Icons.file_download_outlined, color: Colors.white),
+            onPressed: _isDownloading ? null : _downloadExcel,
+          ),
+          IconButton(
+            tooltip: 'Refresh',
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: () => ref.refresh(adminLoanListProvider),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -66,11 +123,11 @@ class _LoanListScreenState extends ConsumerState<LoanListScreen> {
                 scrollDirection: Axis.horizontal,
                 children: [
                   _FilterChip(
-                    label: 'All',
+                    label: 'All Active',
                     isSelected: currentFilter == null,
                     onTap: () => ref.read(loanStatusFilterProvider.notifier).state = null,
                   ),
-                  ...['ACTIVE', 'OVERDUE', 'COMPLETED'].map(
+                  ...['ACTIVE', 'OVERDUE', 'CLOSED', 'COMPLETED'].map(
                     (status) => _FilterChip(
                       label: status,
                       isSelected: currentFilter == status,

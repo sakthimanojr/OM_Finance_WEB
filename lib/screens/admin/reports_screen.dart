@@ -6,9 +6,9 @@ import '../../core/constants/api_constants.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import 'monthly_collections_detail_screen.dart';
-import 'loan_portfolio_detail_screen.dart';
+import 'loan_list_screen.dart';
+import 'dues_screen.dart';
 import 'interest_profit_detail_screen.dart';
-import 'overdue_detail_screen.dart';
 import 'disbursement_detail_screen.dart';
 
 class ReportsScreen extends StatefulWidget {
@@ -148,7 +148,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const LoanPortfolioDetailScreen()),
+                MaterialPageRoute(builder: (_) => const LoanListScreen()),
               );
             },
             onDownloadExcel: () => _download(
@@ -188,7 +188,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const OverdueDetailScreen()),
+                MaterialPageRoute(builder: (_) => const DuesScreen(initialTab: 'overdue')),
               );
             },
             onDownloadExcel: () => _download(

@@ -52,7 +52,11 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
         title: Text(
-          ref.watch(customerStatusFilterProvider) == 'ACTIVE' ? 'Active Customers' : 'All Customers',
+          ref.watch(customerStatusFilterProvider) == 'ACTIVE'
+              ? 'Active Customers'
+              : (ref.watch(customerStatusFilterProvider) == 'CLOSED'
+                  ? 'Closed Loan Customers'
+                  : 'All Customers'),
           style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
         ),
       ),
@@ -145,7 +149,13 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                     itemCount: customers.length,
                     itemBuilder: (context, index) {
                       final customer = customers[index];
-                      final isClosedLoan = customer.loanStatus == 'CLOSED' || customer.loanStatus == 'COMPLETED';
+                      final isClosedLoan = customer.status == 'CLOSED' ||
+                          customer.loanStatus == 'CLOSED' ||
+                          customer.loanStatus == 'COMPLETED';
+                      final displayStatus = isClosedLoan
+                          ? 'CLOSED'
+                          : (customer.status == 'OVERDUE' ? 'OVERDUE' : 'ACTIVE');
+
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
@@ -160,7 +170,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                             ),
                           ],
                         ),
-                      child: ListTile(
+                        child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 8),
                           leading: Builder(builder: (ctx) {
@@ -215,16 +225,16 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                               if (customer.loanNumber != null)
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 7, vertical: 2),
+                                      horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(
                                     color: isClosedLoan
                                         ? Colors.grey.shade100
-                                        : AppTheme.primaryColor.withValues(alpha: 0.10),
+                                        : AppTheme.primaryColor.withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(6),
                                     border: Border.all(
                                       color: isClosedLoan
                                           ? Colors.grey.shade300
-                                          : AppTheme.primaryColor.withValues(alpha: 0.30),
+                                          : AppTheme.primaryColor.withValues(alpha: 0.35),
                                     ),
                                   ),
                                   child: Text(
@@ -232,10 +242,10 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                                         ? 'Loan #${customer.loanNumber} (Closed)'
                                         : 'Loan #${customer.loanNumber}',
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: 11,
                                       fontWeight: FontWeight.bold,
                                       color: isClosedLoan
-                                          ? Colors.grey.shade600
+                                          ? Colors.grey.shade700
                                           : AppTheme.primaryColor,
                                     ),
                                   ),
@@ -243,7 +253,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                               else
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
+                                      horizontal: 7, vertical: 3),
                                   decoration: BoxDecoration(
                                     color: Colors.grey.shade50,
                                     borderRadius: BorderRadius.circular(6),
@@ -252,7 +262,8 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                                   child: Text(
                                     'No Loan',
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
                                       color: Colors.grey.shade500,
                                     ),
                                   ),
@@ -271,7 +282,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                             ],
                           ),
                           trailing: StatusBadge(
-                              status: customer.status, showEmoji: true),
+                              status: displayStatus, showEmoji: true),
                           onTap: () => context
                               .push('/admin/customers/${customer.id}'),
                         ),
