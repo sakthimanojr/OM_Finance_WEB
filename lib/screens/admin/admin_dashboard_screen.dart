@@ -72,7 +72,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                     icon: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.18),
+                        color: Colors.white.withValues(alpha: 0.18),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.refresh_rounded,
@@ -85,7 +85,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                     icon: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.18),
+                        color: Colors.white.withValues(alpha: 0.18),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.logout_outlined,
@@ -112,7 +112,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryColor.withOpacity(0.28),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.28),
                       blurRadius: 14,
                       offset: const Offset(0, 4),
                     ),
@@ -126,8 +126,8 @@ class AdminDashboardScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
 
-              // ── Today's Summary Banner ───────────────────────
-              _TodaySummaryBanner(summary: summary),
+              // ── Financial Summary Banner ─────────────────────
+              _FinancialSummaryBanner(summary: summary),
               const SizedBox(height: 20),
 
                     // ── Stat Cards Grid (with emojis) ─────────────────
@@ -167,20 +167,15 @@ class AdminDashboardScreen extends ConsumerWidget {
                         ),
                         SummaryCard(
                           emoji: '💰',
-                          label: 'Collected This Month',
-                          value: Formatters.currency(
-                              summary.collectedThisMonth),
+                          label: 'Overall Collected',
+                          value: Formatters.currency(summary.totalCollected),
                           color: AppTheme.successColor,
                           onTap: () => context
-                              .push('/admin/payments?month=current'),
+                              .push('/admin/payments'),
                         ),
                       ],
                     ),
                     const SizedBox(height: 20),
-
-                    // ── Portfolio Performance — Lime Accent Card ──────
-                    _PortfolioCard(summary: summary),
-                    const SizedBox(height: 24),
 
                      // ── Quick Actions — Emoji Grid ─────────────────────
                     const _SectionTitle('Management Actions'),
@@ -217,10 +212,10 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-// ── Today's Summary Banner ───────────────────────────────────────────────────
+// ── Financial Summary Banner ──────────────────────────────────────────────────
 
-class _TodaySummaryBanner extends StatelessWidget {
-  const _TodaySummaryBanner({required this.summary});
+class _FinancialSummaryBanner extends StatelessWidget {
+  const _FinancialSummaryBanner({required this.summary});
   final dynamic summary;
 
   @override
@@ -232,7 +227,7 @@ class _TodaySummaryBanner extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryDark.withOpacity(0.35),
+            color: AppTheme.primaryDark.withValues(alpha: 0.35),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -246,7 +241,7 @@ class _TodaySummaryBanner extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
+                  color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Text('📊', style: TextStyle(fontSize: 20)),
@@ -256,17 +251,18 @@ class _TodaySummaryBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "Today's Summary",
+                    'Financial Summary',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 16,
+                      fontSize: 17,
                       fontWeight: FontWeight.w800,
+                      letterSpacing: 0.2,
                     ),
                   ),
                   Text(
-                    Formatters.date(DateTime.now()),
+                    'Disbursed, collections & interest profit breakout',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.65),
+                      color: Colors.white.withValues(alpha: 0.70),
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),
@@ -275,7 +271,7 @@ class _TodaySummaryBanner extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
           Row(
             children: [
               _BannerStat(
@@ -286,26 +282,27 @@ class _TodaySummaryBanner extends StatelessWidget {
               const SizedBox(width: 12),
               _BannerStat(
                 emoji: '✅',
-                label: 'Total Collected',
+                label: 'Collected Back',
                 value: Formatters.currency(summary.totalCollected),
                 valueColor: AppTheme.accentLime,
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Row(
             children: [
               _BannerStat(
-                emoji: '⏳',
-                label: 'Pending Dues',
-                value: '${summary.pendingDuesCount}',
+                emoji: '📈',
+                label: 'Profit in Interest',
+                value: Formatters.currency(summary.totalInterestProfit),
+                valueColor: const Color(0xFF86EFAC),
               ),
               const SizedBox(width: 12),
               _BannerStat(
-                emoji: '🔥',
-                label: 'Overdue Dues',
-                value: '${summary.overdueDuesCount}',
-                valueColor: const Color(0xFFFFB3B3),
+                emoji: '⏳',
+                label: 'Outstanding Balance',
+                value: Formatters.currency(summary.totalOutstanding),
+                valueColor: const Color(0xFFFFD580),
               ),
             ],
           ),
@@ -331,10 +328,10 @@ class _BannerStat extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
         decoration: AppTheme.glassmorphismCard(
-          opacity: 0.14,
-          borderOpacity: 0.2,
+          opacity: 0.15,
+          borderOpacity: 0.22,
           radius: 14,
         ),
         child: Column(
@@ -343,14 +340,14 @@ class _BannerStat extends StatelessWidget {
             Row(
               children: [
                 Text(emoji, style: const TextStyle(fontSize: 14)),
-                const SizedBox(width: 4),
+                const SizedBox(width: 5),
                 Expanded(
                   child: Text(
                     label,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withValues(alpha: 0.75),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -358,130 +355,19 @@ class _BannerStat extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 5),
             Text(
               value,
               style: TextStyle(
                 color: valueColor ?? Colors.white,
                 fontSize: 15,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w900,
                 letterSpacing: -0.2,
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-// ── Portfolio Card (Lime-Yellow accent) ──────────────────────────────────────
-
-class _PortfolioCard extends StatelessWidget {
-  const _PortfolioCard({required this.summary});
-  final dynamic summary;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: AppTheme.accentLime,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.accentLime.withOpacity(0.5),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '📈 Portfolio Performance',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.textDark,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: AppTheme.buttonBlack.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.pie_chart_outline,
-                    color: AppTheme.buttonBlack, size: 18),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _LimeStatRow(
-            '🏦 Total Disbursed',
-            Formatters.currency(summary.totalDisbursed),
-            isBold: true,
-          ),
-          const SizedBox(height: 10),
-          _LimeStatRow(
-            '💵 Total Collected',
-            Formatters.currency(summary.totalCollected),
-            valueColor: AppTheme.successColor,
-            isBold: true,
-          ),
-          const SizedBox(height: 10),
-          _LimeStatRow(
-            '⏳ Pending Count',
-            '${summary.pendingDuesCount}',
-          ),
-          const SizedBox(height: 10),
-          _LimeStatRow(
-            '🔥 Overdue Count',
-            '${summary.overdueDuesCount}',
-            valueColor: AppTheme.errorColor,
-            isBold: true,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LimeStatRow extends StatelessWidget {
-  const _LimeStatRow(this.label, this.value,
-      {this.valueColor, this.isBold = false});
-  final String label;
-  final String value;
-  final Color? valueColor;
-  final bool isBold;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: AppTheme.textDark.withOpacity(0.65),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontWeight: isBold ? FontWeight.w800 : FontWeight.w600,
-            fontSize: 14,
-            color: valueColor ?? AppTheme.textDark,
-          ),
-        ),
-      ],
     );
   }
 }
@@ -703,12 +589,12 @@ class _QuickActionCardState extends State<_QuickActionCard>
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: widget.color.withOpacity(0.12),
+                color: widget.color.withValues(alpha: 0.12),
                 blurRadius: 14,
                 offset: const Offset(0, 5),
               ),
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 4,
                 offset: const Offset(0, 1),
               ),
@@ -721,7 +607,7 @@ class _QuickActionCardState extends State<_QuickActionCard>
               Container(
                 padding: const EdgeInsets.all(11),
                 decoration: BoxDecoration(
-                  color: widget.color.withOpacity(0.10),
+                  color: widget.color.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Text(widget.emoji,

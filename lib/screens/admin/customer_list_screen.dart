@@ -51,7 +51,10 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
-        title: const Text('Customers', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+        title: Text(
+          ref.watch(customerStatusFilterProvider) == 'ACTIVE' ? 'Active Customers' : 'All Customers',
+          style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/admin/customers/new'),
@@ -61,15 +64,42 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
       ),
       body: Column(
         children: [
+          // Filter Chips: All, Active, Closed
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: SizedBox(
+              height: 36,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _FilterTab(
+                    label: 'All Customers',
+                    isSelected: ref.watch(customerStatusFilterProvider) == null,
+                    onTap: () => ref.read(customerStatusFilterProvider.notifier).state = null,
+                  ),
+                  _FilterTab(
+                    label: 'Active',
+                    isSelected: ref.watch(customerStatusFilterProvider) == 'ACTIVE',
+                    onTap: () => ref.read(customerStatusFilterProvider.notifier).state = 'ACTIVE',
+                  ),
+                  _FilterTab(
+                    label: 'Closed Loans / Profiles',
+                    isSelected: ref.watch(customerStatusFilterProvider) == 'CLOSED',
+                    onTap: () => ref.read(customerStatusFilterProvider.notifier).state = 'CLOSED',
+                  ),
+                ],
+              ),
+            ),
+          ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
                   ),
@@ -115,6 +145,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                     itemCount: customers.length,
                     itemBuilder: (context, index) {
                       final customer = customers[index];
+                      final isClosedLoan = customer.loanStatus == 'CLOSED' || customer.loanStatus == 'COMPLETED';
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
@@ -123,7 +154,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                           border: Border.all(color: Colors.grey.shade100),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.02),
+                              color: Colors.black.withValues(alpha: 0.02),
                               blurRadius: 8,
                               offset: const Offset(0, 3),
                             ),
@@ -146,13 +177,13 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                                   end: Alignment.bottomRight,
                                   colors: [
                                     avatarColor,
-                                    avatarColor.withOpacity(0.7),
+                                    avatarColor.withValues(alpha: 0.70),
                                   ],
                                 ),
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: avatarColor.withOpacity(0.3),
+                                    color: avatarColor.withValues(alpha: 0.30),
                                     blurRadius: 8,
                                     offset: const Offset(0, 3),
                                   ),
@@ -170,9 +201,64 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                               ),
                             );
                           }),
-                          title: Text(customer.name,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 14)),
+                          title: Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  customer.name,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold, fontSize: 14),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              if (customer.loanNumber != null)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 7, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: isClosedLoan
+                                        ? Colors.grey.shade100
+                                        : AppTheme.primaryColor.withValues(alpha: 0.10),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: isClosedLoan
+                                          ? Colors.grey.shade300
+                                          : AppTheme.primaryColor.withValues(alpha: 0.30),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    isClosedLoan
+                                        ? 'Loan #${customer.loanNumber} (Closed)'
+                                        : 'Loan #${customer.loanNumber}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: isClosedLoan
+                                          ? Colors.grey.shade600
+                                          : AppTheme.primaryColor,
+                                    ),
+                                  ),
+                                )
+                              else
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade50,
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: Colors.grey.shade200),
+                                  ),
+                                  child: Text(
+                                    'No Loan',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.grey.shade500,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                           subtitle: Row(
                             children: [
                               const Icon(Icons.phone_outlined,
@@ -197,6 +283,47 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FilterTab extends StatelessWidget {
+  const _FilterTab({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.primaryColor : Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected ? AppTheme.primaryColor : Colors.grey.shade300,
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              color: isSelected ? Colors.white : Colors.grey.shade700,
+            ),
+          ),
+        ),
       ),
     );
   }

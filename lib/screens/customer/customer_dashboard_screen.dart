@@ -162,12 +162,37 @@ class CustomerDashboardScreen extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(height: 18),
-                            if (summary.nextDueAmount != null)
+                            if (summary.activeLoans == 0) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                decoration: AppTheme.glassmorphismCard(
+                                  opacity: 0.18,
+                                  borderOpacity: 0.25,
+                                  radius: 10,
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.verified_user_rounded,
+                                        color: Colors.white, size: 16),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'No Active Loan • Account Active 🟢',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ] else if (summary.nextDueAmount != null) ...[
                               _EmiReminderChip(
                                 amount: summary.nextDueAmount,
                                 date: summary.nextDueDate,
-                              )
-                            else
+                              ),
+                            ] else ...[
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 8),
@@ -192,6 +217,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
                                   ],
                                 ),
                               ),
+                            ],
                           ],
                         ),
                       ),
@@ -249,8 +275,29 @@ class CustomerDashboardScreen extends ConsumerWidget {
                                     fontWeight: FontWeight.bold,
                                     color: AppTheme.textDark),
                               ),
-                              Icon(Icons.badge_outlined,
-                                  color: Colors.grey.shade400, size: 20),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.green.shade200),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text('🟢', style: TextStyle(fontSize: 10)),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Active Account',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                           const Divider(height: 24),
@@ -270,8 +317,8 @@ class CustomerDashboardScreen extends ConsumerWidget {
                               Formatters.currency(summary.totalAmountRepaid),
                               valueColor: AppTheme.primaryColor,
                               isBoldValue: true),
-                          _StatRow('Total Active Loans',
-                              '${summary.activeLoans}'),
+                          _StatRow('Active Loans',
+                              summary.activeLoans > 0 ? '${summary.activeLoans}' : 'None (No Active Loan)'),
                         ],
                       ),
                     ),
@@ -279,10 +326,69 @@ class CustomerDashboardScreen extends ConsumerWidget {
 
                     // ── Loan History ──────────────────────────────────
                     if (summary.loanHistory.isNotEmpty) ...[
-                      const _SectionTitle('Active & Historical Loans'),
+                      _SectionTitle(summary.activeLoans == 0
+                          ? 'Loan History (All Loans Closed)'
+                          : 'Active & Historical Loans'),
                       const SizedBox(height: 12),
+                      if (summary.activeLoans == 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0D9488).withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF0D9488).withValues(alpha: 0.25)),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.check_circle, color: Color(0xFF0D9488), size: 18),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'No active loans. Your account remains active and all past loans are settled.',
+                                  style: TextStyle(
+                                    color: Color(0xFF0D9488),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ...summary.loanHistory.map(
                         (loan) => _LoanHistoryCard(loan: loan),
+                      ),
+                      const SizedBox(height: 8),
+                    ] else ...[
+                      const _SectionTitle('Loan Status'),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: AppTheme.cardDecoration,
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0D9488).withValues(alpha: 0.10),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.check_circle_outline, color: Color(0xFF0D9488), size: 36),
+                            ),
+                            const SizedBox(height: 14),
+                            const Text(
+                              'No Active Loan',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textDark),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Your account is active. When you take a new loan, its repayment schedule and details will appear here.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 13, color: Colors.grey.shade600, height: 1.4),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 8),
                     ],

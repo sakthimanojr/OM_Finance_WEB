@@ -28,6 +28,8 @@ class _EditCustomerScreenState extends ConsumerState<EditCustomerScreen> {
   late final TextEditingController _guarantorNameCtrl;
   late final TextEditingController _guarantorPhoneCtrl;
   late final TextEditingController _emergencyContactCtrl;
+  late final TextEditingController _passwordCtrl;
+  bool _obscurePassword = true;
   String _status = 'ACTIVE';
 
   @override
@@ -46,6 +48,7 @@ class _EditCustomerScreenState extends ConsumerState<EditCustomerScreen> {
     _guarantorPhoneCtrl = TextEditingController(text: c.guarantorPhone ?? '');
     _emergencyContactCtrl =
         TextEditingController(text: c.emergencyContact ?? '');
+    _passwordCtrl = TextEditingController();
     _status = c.status;
   }
 
@@ -61,6 +64,7 @@ class _EditCustomerScreenState extends ConsumerState<EditCustomerScreen> {
     _guarantorNameCtrl.dispose();
     _guarantorPhoneCtrl.dispose();
     _emergencyContactCtrl.dispose();
+    _passwordCtrl.dispose();
     super.dispose();
   }
 
@@ -72,6 +76,8 @@ class _EditCustomerScreenState extends ConsumerState<EditCustomerScreen> {
       'name': _nameCtrl.text.trim(),
       'phone': _phoneCtrl.text.trim(),
       'status': _status,
+      if (_passwordCtrl.text.trim().isNotEmpty)
+        'password': _passwordCtrl.text.trim(),
       if (_emailCtrl.text.trim().isNotEmpty) 'email': _emailCtrl.text.trim(),
       if (_fatherNameCtrl.text.trim().isNotEmpty)
         'fatherName': _fatherNameCtrl.text.trim(),
@@ -262,6 +268,76 @@ class _EditCustomerScreenState extends ConsumerState<EditCustomerScreen> {
                     DropdownMenuItem(value: 'CLOSED', child: Text('Closed')),
                   ],
                   onChanged: (v) => setState(() => _status = v ?? 'ACTIVE'),
+                ),
+              ),
+            ]),
+            const SizedBox(height: 16),
+            _section('Customer App Login & Password', [
+              Container(
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.18)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, color: AppTheme.primaryColor, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Customer logs in using their Phone Number (${_phoneCtrl.text}). Leave password blank to keep current password, or enter a new one to reset.',
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade800, height: 1.3),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              TextFormField(
+                controller: _passwordCtrl,
+                obscureText: _obscurePassword,
+                decoration: InputDecoration(
+                  labelText: 'New Login Password (optional)',
+                  hintText: 'Leave blank to keep existing password',
+                  prefixIcon: const Icon(Icons.lock_outline, size: 18, color: AppTheme.primaryColor),
+                  filled: true,
+                  fillColor: AppTheme.surfaceLight,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade200),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade200),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          size: 20,
+                          color: Colors.grey.shade600,
+                        ),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        tooltip: _obscurePassword ? 'Show Password' : 'Hide Password',
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _passwordCtrl.text = _phoneCtrl.text.trim();
+                          });
+                        },
+                        child: const Text('Set to Mobile', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ]),

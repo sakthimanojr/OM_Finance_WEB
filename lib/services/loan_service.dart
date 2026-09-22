@@ -15,7 +15,7 @@ class LoanService {
           if (status != null) 'status': status,
           if (type != null) 'type': type,
           'page': page,
-          'limit': 20,
+          'limit': 200,
         },
       );
       final list = response.data['data'] as List<dynamic>;

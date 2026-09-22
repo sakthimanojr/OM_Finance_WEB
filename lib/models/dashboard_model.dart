@@ -8,6 +8,8 @@ class AdminSummary {
     required this.collectedThisMonth,
     required this.pendingDuesCount,
     required this.overdueDuesCount,
+    this.totalInterestProfit = 0,
+    this.totalOutstanding = 0,
   });
 
   final int totalCustomers;
@@ -18,6 +20,8 @@ class AdminSummary {
   final num collectedThisMonth;
   final int pendingDuesCount;
   final int overdueDuesCount;
+  final num totalInterestProfit;
+  final num totalOutstanding;
 
   static num _toNum(dynamic v) => v is num ? v : num.parse(v.toString());
 
@@ -30,6 +34,8 @@ class AdminSummary {
         collectedThisMonth: _toNum(json['collectedThisMonth'] ?? 0),
         pendingDuesCount: json['pendingDuesCount'] as int? ?? 0,
         overdueDuesCount: json['overdueDuesCount'] as int? ?? 0,
+        totalInterestProfit: _toNum(json['totalInterestProfit'] ?? 0),
+        totalOutstanding: _toNum(json['totalOutstanding'] ?? 0),
       );
 }
 

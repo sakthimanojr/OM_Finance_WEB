@@ -28,10 +28,25 @@ class _NewCustomerScreenState extends ConsumerState<NewCustomerScreen> {
   final _password = TextEditingController();
 
   bool _isSubmitting = false;
+  bool _obscurePassword = true;
+  bool _autoSyncPassword = true;
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    _phone.addListener(_onPhoneChanged);
+  }
+
+  void _onPhoneChanged() {
+    if (_autoSyncPassword && _phone.text.trim().isNotEmpty) {
+      _password.text = _phone.text.trim();
+    }
+  }
+
+  @override
   void dispose() {
+    _phone.removeListener(_onPhoneChanged);
     for (final c in [
       _name,
       _fatherName,
@@ -58,11 +73,13 @@ class _NewCustomerScreenState extends ConsumerState<NewCustomerScreen> {
       _error = null;
     });
     try {
+      final phoneVal = _phone.text.trim();
+      final passwordVal = _password.text.trim().isNotEmpty ? _password.text.trim() : phoneVal;
       final service = ref.read(customerServiceProvider);
       final customer = await service.createCustomer({
         'name': _name.text.trim(),
         if (_fatherName.text.isNotEmpty) 'fatherName': _fatherName.text.trim(),
-        'phone': _phone.text.trim(),
+        'phone': phoneVal,
         if (_email.text.isNotEmpty) 'email': _email.text.trim(),
         if (_address.text.isNotEmpty) 'address': _address.text.trim(),
         if (_aadhaar.text.isNotEmpty) 'aadhaar': _aadhaar.text.trim(),
@@ -71,7 +88,7 @@ class _NewCustomerScreenState extends ConsumerState<NewCustomerScreen> {
         if (_monthlyIncome.text.isNotEmpty) 'monthlyIncome': num.tryParse(_monthlyIncome.text),
         if (_guarantorName.text.isNotEmpty) 'guarantorName': _guarantorName.text.trim(),
         if (_guarantorPhone.text.isNotEmpty) 'guarantorPhone': _guarantorPhone.text.trim(),
-        'password': _password.text,
+        'password': passwordVal,
       });
       ref.invalidate(customerListProvider);
       if (mounted) {
@@ -118,8 +135,73 @@ class _NewCustomerScreenState extends ConsumerState<NewCustomerScreen> {
             _field(_guarantorName, 'Guarantor Name'),
             _field(_guarantorPhone, 'Guarantor Phone', keyboardType: TextInputType.phone, maxLength: 10),
             const SizedBox(height: 12),
-            _sectionLabel('Account Access'),
-            _field(_password, 'Set Login Password *', obscureText: true, validator: _passwordValidator),
+            _sectionLabel('Customer App Login & Password'),
+            Container(
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.20)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: AppTheme.primaryColor, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Customer can log in to the Customer App using their Phone Number as username and this Password.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade800,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: TextFormField(
+                controller: _password,
+                obscureText: _obscurePassword,
+                onChanged: (val) {
+                  if (_autoSyncPassword && val != _phone.text.trim()) {
+                    setState(() => _autoSyncPassword = false);
+                  }
+                },
+                decoration: InputDecoration(
+                  labelText: 'Customer App Login Password *',
+                  hintText: 'Default: Same as Mobile Number',
+                  prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.primaryColor, size: 20),
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          size: 20,
+                          color: Colors.grey.shade600,
+                        ),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        tooltip: _obscurePassword ? 'Show Password' : 'Hide Password',
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _password.text = _phone.text.trim();
+                            _autoSyncPassword = true;
+                          });
+                        },
+                        child: const Text('Use Mobile', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ),
+                validator: _passwordValidator,
+              ),
+            ),
             if (_error != null) ...[
               const SizedBox(height: 12),
               Text(_error!, style: const TextStyle(color: AppTheme.errorColor)),

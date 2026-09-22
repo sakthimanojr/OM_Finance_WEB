@@ -31,17 +31,60 @@ class CustomerLoanListScreen extends ConsumerWidget {
         data: (loans) {
           if (loans.isEmpty) {
             return const EmptyStateView(
-              message: 'You have no loans yet',
+              message: 'No active loans found.\nYour account is active.',
               icon: Icons.account_balance_wallet_outlined,
             );
           }
+          final hasActiveLoans = loans.any((l) => l.status == 'ACTIVE' || l.status == 'OVERDUE');
           return RefreshIndicator(
             onRefresh: () async => ref.refresh(loanListProvider(null)),
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: loans.length,
+              itemCount: loans.length + (hasActiveLoans ? 0 : 1),
               itemBuilder: (context, index) {
-                final loan = loans[index];
+                if (!hasActiveLoans && index == 0) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0D9488).withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFF0D9488).withValues(alpha: 0.25)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.verified_user_rounded, color: Color(0xFF0D9488), size: 22),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'No Active Loans • Account Active 🟢',
+                                style: TextStyle(
+                                  color: Color(0xFF0D9488),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'All your previous loans are closed and settled.',
+                                style: TextStyle(
+                                  color: Colors.black54,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final loanIndex = hasActiveLoans ? index : index - 1;
+                final loan = loans[loanIndex];
                 final statusColor = AppTheme.statusColor(loan.status);
                 final emoji = AppTheme.statusEmoji(loan.status);
 

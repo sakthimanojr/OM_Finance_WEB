@@ -16,6 +16,10 @@ class Customer {
     this.photoUrl,
     this.status = 'ACTIVE',
     this.createdAt,
+    this.loanNumber,
+    this.activeLoanNumber,
+    this.loanStatus,
+    this.loans,
   });
 
   final String id;
@@ -34,6 +38,10 @@ class Customer {
   final String? photoUrl;
   final String status;
   final DateTime? createdAt;
+  final String? loanNumber;
+  final String? activeLoanNumber;
+  final String? loanStatus;
+  final List<dynamic>? loans;
 
   factory Customer.fromJson(Map<String, dynamic> json) => Customer(
         id: json['id'] as String,
@@ -54,5 +62,9 @@ class Customer {
         photoUrl: json['photoUrl'] as String?,
         status: json['status'] as String? ?? 'ACTIVE',
         createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt']) : null,
+        loanNumber: json['loanNumber'] as String?,
+        activeLoanNumber: json['activeLoanNumber'] as String?,
+        loanStatus: json['loanStatus'] as String?,
+        loans: json['loans'] as List<dynamic>?,
       );
 }
