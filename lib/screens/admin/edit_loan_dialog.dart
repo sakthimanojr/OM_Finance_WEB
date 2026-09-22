@@ -149,7 +149,7 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.1),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.edit_note_rounded, color: AppTheme.primaryColor, size: 24),
@@ -184,9 +184,9 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppTheme.errorColor.withOpacity(0.08),
+                    color: AppTheme.errorColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.errorColor.withOpacity(0.3)),
+                    border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
@@ -283,9 +283,9 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.05),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppTheme.primaryColor.withOpacity(0.15)),
+                  border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.15)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

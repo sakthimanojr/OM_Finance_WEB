@@ -5,7 +5,9 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/state_views.dart';
 import '../../core/widgets/status_badge.dart';
+import '../../core/widgets/interactive_card.dart';
 import '../../providers/loan_provider.dart';
+
 
 class LoanListScreen extends ConsumerStatefulWidget {
   const LoanListScreen({super.key, this.status});
@@ -102,75 +104,79 @@ class _LoanListScreenState extends ConsumerState<LoanListScreen> {
                     itemBuilder: (context, index) {
                       final loan = loans[index];
                       final sColor = _statusColor(loan.status);
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade100),
-                          boxShadow: [
-                            BoxShadow(
-                              color: sColor.withOpacity(0.06),
-                              blurRadius: 14,
-                              offset: const Offset(0, 5),
-                            ),
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.02),
-                              blurRadius: 5,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(16),
-                          onTap: () => context.push('/admin/loans/${loan.id}'),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(9),
-                                      decoration: BoxDecoration(
-                                        color: sColor.withOpacity(0.12),
-                                        borderRadius: BorderRadius.circular(12),
+                      return FadeSlideEntrance(
+                        delayIndex: index.clamp(0, 10),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          child: InteractiveBounce(
+                            onTap: () => context.push('/admin/loans/${loan.id}'),
+                            scaleFactor: 0.98,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.grey.shade100),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: sColor.withValues(alpha: 0.06),
+                                    blurRadius: 14,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.02),
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(9),
+                                        decoration: BoxDecoration(
+                                          color: sColor.withValues(alpha: 0.12),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Icon(
+                                          AppTheme.statusIcon(loan.status),
+                                          color: sColor,
+                                          size: 18,
+                                        ),
                                       ),
-                                      child: Text(
-                                        AppTheme.statusEmoji(loan.status),
-                                        style: const TextStyle(fontSize: 18),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            '${loan.type.replaceAll('_', ' ')} • ${Formatters.currency(loan.principal)}',
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              '${loan.type.replaceAll('_', ' ')} • ${Formatters.currency(loan.principal)}',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            'Loan #${loan.loanNumber ?? 'N/A'} • ${loan.customerName ?? 'N/A'}',
-                                            style: TextStyle(
-                                              color: Colors.grey.shade500,
-                                              fontSize: 12,
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'Loan #${loan.loanNumber ?? 'N/A'} • ${loan.customerName ?? 'N/A'}',
+                                              style: TextStyle(
+                                                color: Colors.grey.shade500,
+                                                fontSize: 12,
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    StatusBadge(
-                                        status: loan.status,
-                                        showEmoji: true),
-                                  ],
-                                ),
+                                      StatusBadge(
+                                          status: loan.status,
+                                          showIcon: true),
+                                    ],
+                                  ),
+
                                 const SizedBox(height: 10),
                                 // Repayment progress bar
                                 Builder(builder: (ctx) {
@@ -246,7 +252,8 @@ class _LoanListScreenState extends ConsumerState<LoanListScreen> {
                             ),
                           ),
                         ),
-                      );
+                      ),
+                    );
                     },
                   ),
                 );
@@ -282,7 +289,7 @@ class _FilterChip extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? chipColor.withOpacity(0.12) : Colors.white,
+            color: isSelected ? chipColor.withValues(alpha: 0.12) : Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isSelected ? chipColor : Colors.grey.shade200,

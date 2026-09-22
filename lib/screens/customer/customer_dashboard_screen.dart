@@ -5,8 +5,13 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/premium_widgets.dart';
 import '../../core/widgets/state_views.dart';
+import '../../core/widgets/status_badge.dart';
+import '../../core/widgets/wave_container.dart';
+
+import '../../core/widgets/interactive_card.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
+
 
 class CustomerDashboardScreen extends ConsumerWidget {
   const CustomerDashboardScreen({super.key});
@@ -56,7 +61,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
             icon: Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.18),
+                color: Colors.white.withValues(alpha: 0.18),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.person_outline,
@@ -69,7 +74,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
             icon: Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.18),
+                color: Colors.white.withValues(alpha: 0.18),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.logout_outlined,
@@ -96,211 +101,253 @@ class CustomerDashboardScreen extends ConsumerWidget {
           data: (summary) => ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
             children: [
-              // ── Top Greeting Card ────────────────────────────
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  gradient: AppTheme.customerGradient,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF0D9488).withOpacity(0.28),
-                      blurRadius: 14,
-                      offset: const Offset(0, 4),
+              // ── Top Greeting Card with Wave ────────────────────
+              FadeSlideEntrance(
+                delayIndex: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.customerGradient,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF0D9488).withValues(alpha: 0.28),
+                        blurRadius: 14,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: AnimatedWaveBackground(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 16),
+                      child: GreetingHeader(
+                        name: displayName,
+                        subtitle: 'Your financial dashboard',
+                        role: 'CUSTOMER',
+                      ),
                     ),
-                  ],
-                ),
-                child: GreetingHeader(
-                  name: displayName,
-                  subtitle: 'Your financial dashboard',
-                  role: '👤 CUSTOMER',
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
 
-              // ── Outstanding hero card ──────────────────────────
-              Container(
-                      decoration: AppTheme.customerHeroCardDecoration,
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: AppTheme.glassmorphismCard(
-                                    opacity: 0.15,
-                                    borderOpacity: 0.2,
-                                    radius: 12,
-                                  ),
-                                  child: const Text('💳',
-                                      style: TextStyle(fontSize: 22)),
-                                ),
-                                const SizedBox(width: 10),
-                                const Expanded(
-                                  child: Text(
-                                    'Total Outstanding Dues',
-                                    style: TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              Formatters.currency(summary.totalOutstanding),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 34,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 18),
-                            if (summary.activeLoans == 0) ...[
+              // ── Outstanding hero card with Animated Waves ───────
+              FadeSlideEntrance(
+                delayIndex: 1,
+                child: Container(
+                  decoration: AppTheme.customerHeroCardDecoration,
+                  child: AnimatedWaveBackground(
+                    waveOpacity1: 0.12,
+                    waveOpacity2: 0.08,
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                                decoration: AppTheme.glassmorphismCard(
-                                  opacity: 0.18,
-                                  borderOpacity: 0.25,
-                                  radius: 10,
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.verified_user_rounded,
-                                        color: Colors.white, size: 16),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'No Active Loan • Account Active 🟢',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ] else if (summary.nextDueAmount != null) ...[
-                              _EmiReminderChip(
-                                amount: summary.nextDueAmount,
-                                date: summary.nextDueDate,
-                              ),
-                            ] else ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
+                                padding: const EdgeInsets.all(8),
                                 decoration: AppTheme.glassmorphismCard(
                                   opacity: 0.15,
                                   borderOpacity: 0.2,
-                                  radius: 10,
+                                  radius: 12,
                                 ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.check_circle_outline,
-                                        color: Colors.white70, size: 16),
-                                    SizedBox(width: 6),
-                                    Text(
-                                      'No pending dues — all caught up! 🎉',
-                                      style: TextStyle(
-                                          color: Colors.white70,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                  ],
+                                child: const Icon(
+                                  Icons.account_balance_wallet_rounded,
+                                  color: Colors.white,
+                                  size: 22,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              const Expanded(
+                                child: Text(
+                                  'Total Outstanding Dues',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
                             ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            Formatters.currency(summary.totalOutstanding),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 34,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          if (summary.activeLoans == 0) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              decoration: AppTheme.glassmorphismCard(
+                                opacity: 0.18,
+                                borderOpacity: 0.25,
+                                radius: 10,
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  GlowingPulseDot(
+                                    color: Color(0xFF6EE7B7),
+                                    size: 6,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'No Active Loan • Account Active',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ] else if (summary.nextDueAmount != null) ...[
+                            _EmiReminderChip(
+                              amount: summary.nextDueAmount,
+                              date: summary.nextDueDate,
+                            ),
+                          ] else ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              decoration: AppTheme.glassmorphismCard(
+                                opacity: 0.15,
+                                borderOpacity: 0.2,
+                                radius: 10,
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.check_circle_outline,
+                                      color: Colors.white70, size: 16),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'No pending dues — all caught up!',
+                                    style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
-                        ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
 
-                    // ── Quick Links Row ───────────────────────────────
+              // ── Quick Links Row ───────────────────────────────
+              FadeSlideEntrance(
+                delayIndex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     const _SectionTitle('Quick Actions'),
                     const SizedBox(height: 14),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        EmojiIconButton(
-                          emoji: '📋',
+                        ActionIconButton(
+                          icon: Icons.assignment_outlined,
                           label: 'My Loans',
                           gradient: AppTheme.primaryGradient,
                           onTap: () => context.push('/customer/loans'),
                         ),
-                        EmojiIconButton(
-                          emoji: '🧾',
+                        ActionIconButton(
+                          icon: Icons.receipt_long_outlined,
                           label: 'Payments',
                           gradient: AppTheme.accentGradient,
                           onTap: () => context.push('/customer/payments'),
                         ),
-                        EmojiIconButton(
-                          emoji: '🏦',
+                        ActionIconButton(
+                          icon: Icons.account_balance_outlined,
                           label: 'Chit Funds',
                           gradient: AppTheme.customerGradient,
                           onTap: () => context.push('/customer/chits'),
                         ),
-                        EmojiIconButton(
-                          emoji: '👤',
+                        ActionIconButton(
+                          icon: Icons.person_outline_rounded,
                           label: 'Profile',
                           gradient: AppTheme.darkGradient,
                           onTap: () => context.push('/customer/profile'),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
 
-                    // ── Account Summary Card ──────────────────────────
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: AppTheme.cardDecoration,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+              // ── Account Summary Card ──────────────────────────
+              FadeSlideEntrance(
+                delayIndex: 3,
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: AppTheme.cardDecoration,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          const Row(
                             children: [
-                              const Text(
-                                '📊 Account Summary',
+                              Icon(Icons.pie_chart_outline_rounded,
+                                  color: AppTheme.primaryColor, size: 18),
+                              SizedBox(width: 8),
+                              Text(
+                                'Account Summary',
                                 style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: AppTheme.textDark),
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: Colors.green.shade50,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.green.shade200),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text('🟢', style: TextStyle(fontSize: 10)),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      'Active Account',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.green,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ],
                           ),
-                          const Divider(height: 24),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade50,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.green.shade200),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                GlowingPulseDot(
+                                  color: Colors.green,
+                                  size: 5,
+                                ),
+                                SizedBox(width: 5),
+                                Text(
+                                  'Active Account',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 24),
+
                           _StatRow(
                               'Total Principal Borrowed',
                               Formatters.currency(
@@ -322,7 +369,9 @@ class CustomerDashboardScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                  ),
+                  const SizedBox(height: 24),
+
 
                     // ── Loan History ──────────────────────────────────
                     if (summary.loanHistory.isNotEmpty) ...[
@@ -440,7 +489,11 @@ class _EmiReminderChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final days = _daysUntil(date);
-    final urgency = days <= 2 ? '🔥' : (days <= 7 ? '⏳' : '📅');
+    final (urgencyIcon, urgencyColor) = days <= 2
+        ? (Icons.priority_high_rounded, const Color(0xFFF87171))
+        : (days <= 7
+            ? (Icons.schedule_rounded, const Color(0xFFFBBF24))
+            : (Icons.calendar_today_rounded, Colors.white70));
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -452,7 +505,7 @@ class _EmiReminderChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(urgency, style: const TextStyle(fontSize: 14)),
+          Icon(urgencyIcon, color: urgencyColor, size: 15),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
@@ -478,20 +531,21 @@ class _LoanHistoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = AppTheme.statusColor(loan.status);
-    final emoji = AppTheme.statusEmoji(loan.status);
+    final statusIcon = AppTheme.statusIcon(loan.status);
 
     // Compute repayment progress
     final principal = (loan.principal as num?)?.toDouble() ?? 1.0;
     final paid = (loan.totalCollection as num?)?.toDouble() ?? 0.0;
-    final progress = principal > 0 ? (paid / (principal * 1.3)).clamp(0.0, 1.0) : 0.0;
+    final progress =
+        principal > 0 ? (paid / (principal * 1.3)).clamp(0.0, 1.0) : 0.0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      decoration: AppTheme.cardDecoration,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+      child: InteractiveBounce(
         onTap: () => context.push('/customer/loans/${loan.id}'),
-        child: Padding(
+        scaleFactor: 0.98,
+        child: Container(
+          decoration: AppTheme.cardDecoration,
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -501,10 +555,10 @@ class _LoanHistoryCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.12),
+                      color: color.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(emoji, style: const TextStyle(fontSize: 18)),
+                    child: Icon(statusIcon, color: color, size: 18),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -533,61 +587,20 @@ class _LoanHistoryCard extends StatelessWidget {
                             fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                       const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: color.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                              color: color.withOpacity(0.3), width: 1),
-                        ),
-                        child: Text(
-                          '$emoji ${loan.status}',
-                          style: TextStyle(
-                              color: color,
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
+                      StatusBadge(status: loan.status),
                     ],
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              // Repayment progress bar
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Repayment Progress',
-                        style: TextStyle(
-                            color: Colors.grey.shade500, fontSize: 10),
-                      ),
-                      Text(
-                        '${(progress * 100).toStringAsFixed(0)}%',
-                        style: TextStyle(
-                          color: color,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      minHeight: 5,
-                      backgroundColor: Colors.grey.shade100,
-                      valueColor: AlwaysStoppedAnimation<Color>(color),
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: Colors.grey.shade100,
+                  color: color,
+                  minHeight: 5,
+                ),
               ),
             ],
           ),

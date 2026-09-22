@@ -48,7 +48,7 @@ class MyChitsScreen extends ConsumerWidget {
                         height: 150,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.06),
+                          color: Colors.white.withValues(alpha: 0.06),
                         ),
                       ),
                     ),
@@ -60,7 +60,7 @@ class MyChitsScreen extends ConsumerWidget {
                         height: 120,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.04),
+                          color: Colors.white.withValues(alpha: 0.04),
                         ),
                       ),
                     ),
@@ -112,22 +112,10 @@ class _MyChitPremiumCard extends StatelessWidget {
   final ChitMember member;
   final ChitFund chit;
 
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'ACTIVE':
-        return AppTheme.successColor;
-      case 'COMPLETED':
-        return AppTheme.primaryColor;
-      case 'PAUSED':
-        return AppTheme.warningColor;
-      default:
-        return AppTheme.textMuted;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _statusColor(chit.status);
+
 
     return Container(
       decoration: BoxDecoration(
@@ -135,7 +123,7 @@ class _MyChitPremiumCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -169,13 +157,14 @@ class _MyChitPremiumCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primaryColor.withOpacity(0.25),
+                            color: AppTheme.primaryColor.withValues(alpha: 0.25),
                             blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),
                         ],
                       ),
-                      child: const Text('🏦', style: TextStyle(fontSize: 20)),
+                      child: const Icon(Icons.account_balance_rounded,
+                          color: Colors.white, size: 20),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -194,8 +183,8 @@ class _MyChitPremiumCard extends StatelessWidget {
                             const SizedBox(height: 2),
                             Row(
                               children: [
-                                const Text('👥',
-                                    style: TextStyle(fontSize: 11)),
+                                Icon(Icons.group_outlined,
+                                    size: 13, color: Colors.grey.shade600),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Membership #${member.membershipLabel}',
@@ -211,8 +200,9 @@ class _MyChitPremiumCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    StatusBadge(status: chit.status, showEmoji: true),
+                    StatusBadge(status: chit.status, showIcon: true),
                   ],
+
                 ),
                 const SizedBox(height: 18),
 
@@ -252,9 +242,9 @@ class _MyChitPremiumCard extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withOpacity(0.04),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.04),
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: AppTheme.primaryColor.withOpacity(0.06)),
+                          border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.06)),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -316,16 +306,16 @@ class _MyChitPremiumCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppTheme.successColor.withOpacity(0.08),
-                          AppTheme.primaryColor.withOpacity(0.04),
+                          AppTheme.successColor.withValues(alpha: 0.08),
+                          AppTheme.primaryColor.withValues(alpha: 0.04),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.successColor.withOpacity(0.2)),
+                      border: Border.all(color: AppTheme.successColor.withValues(alpha: 0.2)),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.stars, color: AppTheme.successColor, size: 18),
+                        const Icon(Icons.stars, color: AppTheme.successColor, size: 18),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -337,7 +327,7 @@ class _MyChitPremiumCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        Icon(Icons.arrow_forward_ios, size: 12, color: AppTheme.successColor.withOpacity(0.7)),
+                        Icon(Icons.arrow_forward_ios, size: 12, color: AppTheme.successColor.withValues(alpha: 0.7)),
                       ],
                     ),
                   ),
@@ -460,7 +450,7 @@ class _MyAuctionsTab extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -476,7 +466,7 @@ class _MyAuctionsTab extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: (isRegular ? AppTheme.primaryColor : Colors.purple)
-                                .withOpacity(0.1),
+                                .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -627,7 +617,7 @@ class _MyPaymentsTab extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
+                      color: Colors.black.withValues(alpha: 0.03),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -639,7 +629,7 @@ class _MyPaymentsTab extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.08),
+                        color: statusColor.withValues(alpha: 0.08),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -687,7 +677,7 @@ class _MyPaymentsTab extends ConsumerWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: statusColor.withOpacity(0.12),
+                            color: statusColor.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
@@ -759,7 +749,7 @@ class _MyLoansTab extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -782,7 +772,7 @@ class _MyLoansTab extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: statusColor.withOpacity(0.12),
+                              color: statusColor.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(

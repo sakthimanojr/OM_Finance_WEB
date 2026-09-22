@@ -166,7 +166,7 @@ class _PayoutBadgeState extends State<_PayoutBadge> {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
-          color: AppTheme.successColor.withOpacity(0.12),
+          color: AppTheme.successColor.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(12),
         ),
         child: const Text('Payout Paid',
@@ -188,7 +188,7 @@ class _PayoutBadgeState extends State<_PayoutBadge> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: AppTheme.accentColor.withOpacity(0.12),
+                color: AppTheme.accentColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text('Mark Paid',

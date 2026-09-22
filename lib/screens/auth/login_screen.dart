@@ -95,15 +95,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           width: 88,
                           height: 88,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.06),
+                            color: Colors.white.withValues(alpha: 0.06),
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.15),
+                              color: Colors.white.withValues(alpha: 0.15),
                               width: 1.5,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.primaryColor.withOpacity(0.35),
+                                color: AppTheme.primaryColor.withValues(alpha: 0.35),
                                 blurRadius: 24,
                                 offset: const Offset(0, 8),
                               ),
@@ -142,7 +142,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         'Welcome back! Sign in to continue.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           fontSize: 14,
                         ),
                       ),
@@ -152,10 +152,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.08),
+                          color: Colors.white.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.12),
+                            color: Colors.white.withValues(alpha: 0.12),
                           ),
                         ),
                         child: Form(
@@ -170,16 +170,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                 decoration: InputDecoration(
                                   labelText: 'Phone number',
                                   labelStyle: TextStyle(
-                                      color: Colors.white.withOpacity(0.7)),
+                                      color: Colors.white.withValues(alpha: 0.7)),
                                   prefixIcon: Icon(Icons.phone_outlined,
-                                      color: Colors.white.withOpacity(0.7)),
+                                      color: Colors.white.withValues(alpha: 0.7)),
                                   counterText: '',
                                   filled: true,
-                                  fillColor: Colors.white.withOpacity(0.06),
+                                  fillColor: Colors.white.withValues(alpha: 0.06),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(14),
                                     borderSide: BorderSide(
-                                        color: Colors.white.withOpacity(0.15)),
+                                        color: Colors.white.withValues(alpha: 0.15)),
                                   ),
                                   // ✅ Replaced green focused border with brand indigo
                                   focusedBorder: OutlineInputBorder(
@@ -213,25 +213,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                 decoration: InputDecoration(
                                   labelText: 'Password',
                                   labelStyle: TextStyle(
-                                      color: Colors.white.withOpacity(0.7)),
+                                      color: Colors.white.withValues(alpha: 0.7)),
                                   prefixIcon: Icon(Icons.lock_outline,
-                                      color: Colors.white.withOpacity(0.7)),
+                                      color: Colors.white.withValues(alpha: 0.7)),
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                       _obscurePassword
                                           ? Icons.visibility_off_outlined
                                           : Icons.visibility_outlined,
-                                      color: Colors.white.withOpacity(0.7),
+                                      color: Colors.white.withValues(alpha: 0.7),
                                     ),
                                     onPressed: () => setState(
                                         () => _obscurePassword = !_obscurePassword),
                                   ),
                                   filled: true,
-                                  fillColor: Colors.white.withOpacity(0.06),
+                                  fillColor: Colors.white.withValues(alpha: 0.06),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(14),
                                     borderSide: BorderSide(
-                                        color: Colors.white.withOpacity(0.15)),
+                                        color: Colors.white.withValues(alpha: 0.15)),
                                   ),
                                   // ✅ Replaced green focused border with brand indigo
                                   focusedBorder: OutlineInputBorder(
@@ -265,7 +265,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   child: Text(
                                     'Forgot password?',
                                     style: TextStyle(
-                                      color: Colors.white.withOpacity(0.7),
+                                      color: Colors.white.withValues(alpha: 0.7),
                                       fontSize: 13,
                                     ),
                                   ),
@@ -292,7 +292,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           Text(
                             'Prefer OTP login?',
                             style: TextStyle(
-                                color: Colors.white.withOpacity(0.5)),
+                                color: Colors.white.withValues(alpha: 0.5)),
                           ),
                           TextButton(
                             onPressed: () => context.push('/otp-login'),

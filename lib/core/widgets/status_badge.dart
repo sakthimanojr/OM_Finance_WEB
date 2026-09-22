@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'interactive_card.dart';
 
 class StatusBadge extends StatelessWidget {
   const StatusBadge({
@@ -7,26 +8,29 @@ class StatusBadge extends StatelessWidget {
     required this.status,
     this.showDot = true,
     this.showEmoji = false,
+    this.showIcon = false,
   });
+
   final String status;
   final bool showDot;
   final bool showEmoji;
+  final bool showIcon;
 
   @override
   Widget build(BuildContext context) {
     final color = AppTheme.statusColor(status);
-    final emoji = AppTheme.statusEmoji(status);
+    final icon = AppTheme.statusIcon(status);
     final formattedStatus = status.replaceAll('_', ' ');
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.35), width: 1.2),
+        border: Border.all(color: color.withValues(alpha: 0.35), width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.08),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -35,24 +39,15 @@ class StatusBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (showEmoji) ...[
-            Text(emoji, style: const TextStyle(fontSize: 11)),
-            const SizedBox(width: 4),
+          if (showIcon || showEmoji) ...[
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 5),
           ] else if (showDot) ...[
-            Container(
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: color,
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withOpacity(0.6),
-                    blurRadius: 4,
-                    spreadRadius: 1,
-                  ),
-                ],
-              ),
+            GlowingPulseDot(
+              color: color,
+              size: 6,
+              isPulsing: status.toUpperCase() == 'ACTIVE' ||
+                  status.toUpperCase() == 'OVERDUE',
             ),
             const SizedBox(width: 6),
           ],
@@ -70,3 +65,4 @@ class StatusBadge extends StatelessWidget {
     );
   }
 }
+

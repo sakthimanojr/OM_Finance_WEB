@@ -93,7 +93,7 @@ class _ChitMembersScreenState extends ConsumerState<ChitMembersScreen> {
             customersAsync.when(
               loading: () => Container(
                 height: 4,
-                color: AppTheme.primaryColor.withOpacity(0.3),
+                color: AppTheme.primaryColor.withValues(alpha: 0.3),
                 child: const LinearProgressIndicator(
                   color: AppTheme.primaryColor,
                   backgroundColor: Colors.transparent,
@@ -116,7 +116,7 @@ class _ChitMembersScreenState extends ConsumerState<ChitMembersScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.primaryColor.withOpacity(0.06),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.06),
                         blurRadius: 10,
                         offset: const Offset(0, 3),
                       ),
@@ -184,7 +184,7 @@ class _ChitMembersScreenState extends ConsumerState<ChitMembersScreen> {
                                 : [
                                     BoxShadow(
                                       color:
-                                          AppTheme.buttonBlack.withOpacity(0.3),
+                                          AppTheme.buttonBlack.withValues(alpha: 0.3),
                                       blurRadius: 10,
                                       offset: const Offset(0, 4),
                                     ),
@@ -314,12 +314,12 @@ class _MemberListItemState extends State<_MemberListItem>
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: avatarColor.withOpacity(0.08),
+              color: avatarColor.withValues(alpha: 0.08),
               blurRadius: 14,
               offset: const Offset(0, 4),
             ),
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 4,
               offset: const Offset(0, 1),
             ),
@@ -380,7 +380,7 @@ class _MemberListItemState extends State<_MemberListItem>
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.accentLime.withOpacity(0.5),
+                        color: AppTheme.accentLime.withValues(alpha: 0.5),
                         blurRadius: 8,
                         offset: const Offset(0, 3),
                       ),
@@ -400,7 +400,7 @@ class _MemberListItemState extends State<_MemberListItem>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.successColor.withOpacity(0.10),
+                    color: AppTheme.successColor.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
@@ -435,7 +435,7 @@ class _MemberListItemState extends State<_MemberListItem>
                   child: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: AppTheme.errorColor.withOpacity(0.08),
+                      color: AppTheme.errorColor.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(

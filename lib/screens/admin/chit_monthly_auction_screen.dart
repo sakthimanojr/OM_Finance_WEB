@@ -165,7 +165,7 @@ class _ChitMonthlyAuctionScreenState extends ConsumerState<ChitMonthlyAuctionScr
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.accentLime.withOpacity(0.4),
+                    color: AppTheme.accentLime.withValues(alpha: 0.4),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -176,7 +176,7 @@ class _ChitMonthlyAuctionScreenState extends ConsumerState<ChitMonthlyAuctionScr
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppTheme.buttonBlack.withOpacity(0.08),
+                      color: AppTheme.buttonBlack.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(Icons.gavel, color: AppTheme.buttonBlack, size: 18),
@@ -209,9 +209,9 @@ class _ChitMonthlyAuctionScreenState extends ConsumerState<ChitMonthlyAuctionScr
                 margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.errorColor.withOpacity(0.08),
+                  color: AppTheme.errorColor.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.errorColor.withOpacity(0.20)),
+                  border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.20)),
                 ),
                 child: const Row(
                   children: [
@@ -250,12 +250,12 @@ class _ChitMonthlyAuctionScreenState extends ConsumerState<ChitMonthlyAuctionScr
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withOpacity(0.08),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.08),
                           blurRadius: 18,
                           offset: const Offset(0, 6),
                         ),
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
+                          color: Colors.black.withValues(alpha: 0.03),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -271,7 +271,7 @@ class _ChitMonthlyAuctionScreenState extends ConsumerState<ChitMonthlyAuctionScr
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.primaryColor.withOpacity(0.10),
+                                  color: AppTheme.primaryColor.withValues(alpha: 0.10),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Icon(Icons.gavel, color: AppTheme.primaryColor, size: 18),
@@ -318,7 +318,7 @@ class _ChitMonthlyAuctionScreenState extends ConsumerState<ChitMonthlyAuctionScr
                                     padding: const EdgeInsets.all(6),
                                     margin: const EdgeInsets.only(left: 6),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.errorColor.withOpacity(0.08),
+                                      color: AppTheme.errorColor.withValues(alpha: 0.08),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: const Icon(Icons.close,
@@ -364,10 +364,10 @@ class _ChitMonthlyAuctionScreenState extends ConsumerState<ChitMonthlyAuctionScr
                                 child: Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.successColor.withOpacity(0.08),
+                                    color: AppTheme.successColor.withValues(alpha: 0.08),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: AppTheme.successColor.withOpacity(0.20),
+                                      color: AppTheme.successColor.withValues(alpha: 0.20),
                                     ),
                                   ),
                                   child: Column(

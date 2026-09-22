@@ -47,7 +47,7 @@ class _LoadingViewState extends State<LoadingView>
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.10),
+                color: AppTheme.primaryColor.withValues(alpha: 0.10),
                 shape: BoxShape.circle,
               ),
               child: const CircularProgressIndicator(
@@ -92,15 +92,15 @@ class ErrorView extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-                color: AppTheme.errorColor.withOpacity(0.15), width: 1.2),
+                color: AppTheme.errorColor.withValues(alpha: 0.15), width: 1.2),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.errorColor.withOpacity(0.08),
+                color: AppTheme.errorColor.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
@@ -112,7 +112,7 @@ class ErrorView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppTheme.errorColor.withOpacity(0.10),
+                  color: AppTheme.errorColor.withValues(alpha: 0.10),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.error_outline_rounded,
@@ -191,12 +191,12 @@ class EmptyStateView extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primaryColor.withOpacity(0.08),
+                color: AppTheme.primaryColor.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
@@ -208,7 +208,7 @@ class EmptyStateView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.08),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.08),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, size: 40, color: AppTheme.primaryColor),

@@ -195,7 +195,7 @@ class _DisbursementDetailScreenState extends State<DisbursementDetailScreen> {
                           initiallyExpanded: index == 0,
                           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                           leading: CircleAvatar(
-                            backgroundColor: AppTheme.primaryColor.withOpacity(0.12),
+                            backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.12),
                             child: const Icon(Icons.send_rounded, color: AppTheme.primaryColor),
                           ),
                           title: Text(
@@ -265,7 +265,7 @@ class _DisbursementDetailScreenState extends State<DisbursementDetailScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(type, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),

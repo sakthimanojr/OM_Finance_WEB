@@ -189,7 +189,7 @@ class _MemberReportTab extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: AppTheme.successColor.withOpacity(0.12),
+                              color: AppTheme.successColor.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text('Won #${m['wonAuctionNumber']}',
@@ -263,8 +263,8 @@ class _AuctionReportTab extends ConsumerWidget {
               child: ListTile(
                 leading: CircleAvatar(
                   backgroundColor: a['type'] == 'REGULAR'
-                      ? AppTheme.primaryColor.withOpacity(0.1)
-                      : Colors.purple.withOpacity(0.1),
+                      ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                      : Colors.purple.withValues(alpha: 0.1),
                   child: Text('#${a['auctionNumber']}',
                       style: TextStyle(
                           color: a['type'] == 'REGULAR' ? AppTheme.primaryColor : Colors.purple,

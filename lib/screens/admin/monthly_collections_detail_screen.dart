@@ -220,7 +220,6 @@ class _MonthlyCollectionsDetailScreenState extends State<MonthlyCollectionsDetai
                     final m = _months[index];
                     final monthKey = m['month'] as String? ?? '-';
                     final total = (m['total'] as num?) ?? 0;
-                    final count = (m['count'] as num?) ?? 0;
                     final payments = (m['payments'] as List<dynamic>?) ?? [];
 
                     final filteredPayments = _searchQuery.isEmpty
@@ -246,7 +245,7 @@ class _MonthlyCollectionsDetailScreenState extends State<MonthlyCollectionsDetai
                           initiallyExpanded: index == 0,
                           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                           leading: CircleAvatar(
-                            backgroundColor: AppTheme.primaryColor.withOpacity(0.12),
+                            backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.12),
                             child: const Icon(Icons.calendar_month, color: AppTheme.primaryColor),
                           ),
                           title: Text(
@@ -312,7 +311,7 @@ class _MonthlyCollectionsDetailScreenState extends State<MonthlyCollectionsDetai
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppTheme.successColor.withOpacity(0.1),
+              color: AppTheme.successColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.check, size: 16, color: AppTheme.successColor),
@@ -353,7 +352,7 @@ class _MonthlyCollectionsDetailScreenState extends State<MonthlyCollectionsDetai
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryLight.withOpacity(0.15),
+                        color: AppTheme.primaryLight.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(

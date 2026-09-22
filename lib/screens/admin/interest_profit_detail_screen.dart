@@ -111,7 +111,6 @@ class _InterestProfitDetailScreenState extends State<InterestProfitDetailScreen>
     }
 
     final totalDisbursed = _summary?['totalDisbursed'] ?? 0;
-    final totalCollected = _summary?['totalCollected'] ?? 0;
     final totalProfit = _summary?['totalProfit'] ?? 0;
 
     return Column(
@@ -222,7 +221,7 @@ class _InterestProfitDetailScreenState extends State<InterestProfitDetailScreen>
                       children: [
                         CircleAvatar(
                           radius: 16,
-                          backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                          backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
                           child: const Icon(Icons.trending_up, size: 18, color: AppTheme.primaryColor),
                         ),
                         const SizedBox(width: 10),
@@ -235,7 +234,7 @@ class _InterestProfitDetailScreenState extends State<InterestProfitDetailScreen>
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.12),
+                        color: Colors.green.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -299,7 +298,7 @@ class _InterestProfitDetailScreenState extends State<InterestProfitDetailScreen>
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -394,7 +393,7 @@ class _InterestProfitDetailScreenState extends State<InterestProfitDetailScreen>
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.statusColor(status).withOpacity(0.12),
+                                    color: AppTheme.statusColor(status).withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(

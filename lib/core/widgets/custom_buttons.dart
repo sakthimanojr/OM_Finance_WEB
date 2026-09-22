@@ -116,7 +116,7 @@ class _AnimatedGradientButtonState extends State<AnimatedGradientButton>
                 ? []
                 : [
                     BoxShadow(
-                      color: AppTheme.buttonBlack.withOpacity(0.30),
+                      color: AppTheme.buttonBlack.withValues(alpha: 0.30),
                       blurRadius: 14,
                       offset: const Offset(0, 5),
                     ),
@@ -144,7 +144,7 @@ class _AnimatedGradientButtonState extends State<AnimatedGradientButton>
                               gradient: LinearGradient(
                                 colors: [
                                   Colors.transparent,
-                                  Colors.white.withOpacity(0.20),
+                                  Colors.white.withValues(alpha: 0.20),
                                   Colors.transparent,
                                 ],
                                 stops: const [0.0, 0.5, 1.0],
@@ -234,13 +234,13 @@ class PremiumCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryColor.withOpacity(0.08),
+            color: AppTheme.primaryColor.withValues(alpha: 0.08),
             blurRadius: 18,
             spreadRadius: 0,
             offset: const Offset(0, 6),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),

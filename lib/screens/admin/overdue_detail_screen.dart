@@ -165,7 +165,7 @@ class _OverdueDetailScreenState extends State<OverdueDetailScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.red.withOpacity(0.3),
+                          color: Colors.red.withValues(alpha: 0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -279,7 +279,7 @@ class _OverdueDetailScreenState extends State<OverdueDetailScreen> {
         child: ExpansionTile(
           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           leading: CircleAvatar(
-            backgroundColor: AppTheme.errorColor.withOpacity(0.12),
+            backgroundColor: AppTheme.errorColor.withValues(alpha: 0.12),
             child: const Icon(Icons.warning_rounded, color: AppTheme.errorColor),
           ),
           title: Row(
@@ -294,7 +294,7 @@ class _OverdueDetailScreenState extends State<OverdueDetailScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: AppTheme.errorColor.withOpacity(0.12),
+                  color: AppTheme.errorColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(

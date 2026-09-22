@@ -80,7 +80,7 @@ class CustomerDetailScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryDark.withOpacity(0.35),
+                      color: AppTheme.primaryDark.withValues(alpha: 0.35),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     ),
@@ -93,7 +93,7 @@ class CustomerDetailScreen extends ConsumerWidget {
                       top: -30,
                       child: CircleAvatar(
                         radius: 60,
-                        backgroundColor: Colors.white.withOpacity(0.04),
+                        backgroundColor: Colors.white.withValues(alpha: 0.04),
                       ),
                     ),
                     Padding(
@@ -105,7 +105,7 @@ class CustomerDetailScreen extends ConsumerWidget {
                             children: [
                               CircleAvatar(
                                 radius: 30,
-                                backgroundColor: Colors.white.withOpacity(0.15),
+                                backgroundColor: Colors.white.withValues(alpha: 0.15),
                                 child: Text(
                                   customer.name.isNotEmpty
                                       ? customer.name[0].toUpperCase()
@@ -135,7 +135,7 @@ class CustomerDetailScreen extends ConsumerWidget {
                                     Text(
                                       customer.phone,
                                       style: TextStyle(
-                                        color: Colors.white.withOpacity(0.7),
+                                        color: Colors.white.withValues(alpha: 0.7),
                                         fontSize: 14,
                                       ),
                                     ),
@@ -146,7 +146,7 @@ class CustomerDetailScreen extends ConsumerWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.18),
+                                  color: Colors.white.withValues(alpha: 0.18),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
@@ -176,7 +176,7 @@ class CustomerDetailScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -291,7 +291,7 @@ class CustomerDetailScreen extends ConsumerWidget {
                                   Border.all(color: Colors.grey.shade100),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.02),
+                                  color: Colors.black.withValues(alpha: 0.02),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
                                 ),

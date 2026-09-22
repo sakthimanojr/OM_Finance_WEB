@@ -61,7 +61,7 @@ class ChitLoansScreen extends ConsumerWidget {
                       top: -30,
                       child: CircleAvatar(
                         radius: 80,
-                        backgroundColor: Colors.white.withOpacity(0.05),
+                        backgroundColor: Colors.white.withValues(alpha: 0.05),
                       ),
                     ),
                     Positioned(
@@ -69,7 +69,7 @@ class ChitLoansScreen extends ConsumerWidget {
                       bottom: -20,
                       child: CircleAvatar(
                         radius: 50,
-                        backgroundColor: Colors.white.withOpacity(0.04),
+                        backgroundColor: Colors.white.withValues(alpha: 0.04),
                       ),
                     ),
                   ],
@@ -196,12 +196,12 @@ class _ChitLoanCardState extends State<_ChitLoanCard>
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primaryColor.withOpacity(0.08),
+                color: AppTheme.primaryColor.withValues(alpha: 0.08),
                 blurRadius: 18,
                 offset: const Offset(0, 6),
               ),
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -220,7 +220,7 @@ class _ChitLoanCardState extends State<_ChitLoanCard>
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.10),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.10),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Center(
@@ -469,12 +469,12 @@ class _CreateChitLoanScreenState extends ConsumerState<CreateChitLoanScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: _availableBalance > 0 ? AppTheme.accentLime : AppTheme.errorColor.withOpacity(0.10),
+                color: _availableBalance > 0 ? AppTheme.accentLime : AppTheme.errorColor.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
                     color: (_availableBalance > 0 ? AppTheme.accentLime : AppTheme.errorColor)
-                        .withOpacity(0.35),
+                        .withValues(alpha: 0.35),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -485,7 +485,7 @@ class _CreateChitLoanScreenState extends ConsumerState<CreateChitLoanScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppTheme.buttonBlack.withOpacity(0.08),
+                      color: AppTheme.buttonBlack.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -622,7 +622,7 @@ class _CreateChitLoanScreenState extends ConsumerState<CreateChitLoanScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.10),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.10),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.calendar_today_outlined, color: AppTheme.primaryColor, size: 18),
@@ -647,7 +647,7 @@ class _CreateChitLoanScreenState extends ConsumerState<CreateChitLoanScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppTheme.errorColor.withOpacity(0.10),
+                        color: AppTheme.errorColor.withValues(alpha: 0.10),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.event_available_outlined, color: AppTheme.errorColor, size: 18),
@@ -814,7 +814,7 @@ class _ChitLoanDetailScreenState extends ConsumerState<ChitLoanDetailScreen> {
                       top: -30,
                       child: CircleAvatar(
                         radius: 60,
-                        backgroundColor: Colors.white.withOpacity(0.04),
+                        backgroundColor: Colors.white.withValues(alpha: 0.04),
                       ),
                     ),
                     Padding(
@@ -852,7 +852,7 @@ class _ChitLoanDetailScreenState extends ConsumerState<ChitLoanDetailScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.18),
+                                  color: Colors.white.withValues(alpha: 0.18),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
@@ -922,7 +922,7 @@ class _ChitLoanDetailScreenState extends ConsumerState<ChitLoanDetailScreen> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.10),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.10),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.calendar_today_outlined,
@@ -965,7 +965,7 @@ class _ChitLoanDetailScreenState extends ConsumerState<ChitLoanDetailScreen> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.successColor.withOpacity(0.08),
+                          color: AppTheme.successColor.withValues(alpha: 0.08),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -977,7 +977,7 @@ class _ChitLoanDetailScreenState extends ConsumerState<ChitLoanDetailScreen> {
                       leading: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppTheme.successColor.withOpacity(0.10),
+                          color: AppTheme.successColor.withValues(alpha: 0.10),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(Icons.arrow_downward,

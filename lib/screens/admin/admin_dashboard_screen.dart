@@ -5,9 +5,12 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/premium_widgets.dart';
 import '../../core/widgets/state_views.dart';
+import '../../core/widgets/wave_container.dart';
+import '../../core/widgets/interactive_card.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../core/network/api_client.dart';
+
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
@@ -104,83 +107,110 @@ class AdminDashboardScreen extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-              // ── Top Greeting Card ────────────────────────────
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.28),
-                      blurRadius: 14,
-                      offset: const Offset(0, 4),
+                    // ── Top Greeting Card with Wave ────────────────────
+                    FadeSlideEntrance(
+                      delayIndex: 0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: AppTheme.primaryGradient,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primaryColor.withValues(alpha: 0.28),
+                              blurRadius: 14,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: AnimatedWaveBackground(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 16),
+                            child: GreetingHeader(
+                              name: displayName,
+                              subtitle: 'OM Finance Admin Portal',
+                              role: 'ADMIN',
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-                child: GreetingHeader(
-                  name: displayName,
-                  subtitle: 'OM Finance Admin Panel',
-                  role: '👑 ADMIN',
-                ),
-              ),
-              const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-              // ── Financial Summary Banner ─────────────────────
-              _FinancialSummaryBanner(summary: summary),
-              const SizedBox(height: 20),
-
-                    // ── Stat Cards Grid (with emojis) ─────────────────
-                    const _SectionTitle('Overview'),
-                    const SizedBox(height: 12),
-                    GridView.count(
-                      crossAxisCount: 2,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: 1.35,
-                      children: [
-                        SummaryCard(
-                          emoji: '👥',
-                          label: 'Active Customers',
-                          value: '${summary.totalCustomers}',
-                          color: AppTheme.primaryColor,
-                          onTap: () => context
-                              .push('/admin/customers?status=ACTIVE'),
-                        ),
-                        SummaryCard(
-                          emoji: '📋',
-                          label: 'Active Loans',
-                          value: '${summary.activeLoans}',
-                          color: AppTheme.primaryLight,
-                          onTap: () =>
-                              context.push('/admin/loans?status=ACTIVE'),
-                        ),
-                        SummaryCard(
-                          emoji: '⚠️',
-                          label: 'Overdue Loans',
-                          value: '${summary.overdueLoans}',
-                          color: AppTheme.errorColor,
-                          onTap: () =>
-                              context.push('/admin/dues?tab=overdue'),
-                        ),
-                        SummaryCard(
-                          emoji: '💰',
-                          label: 'Overall Collected',
-                          value: Formatters.currency(summary.totalCollected),
-                          color: AppTheme.successColor,
-                          onTap: () => context
-                              .push('/admin/payments'),
-                        ),
-                      ],
+                    // ── Financial Summary Banner with Waves ─────────────
+                    FadeSlideEntrance(
+                      delayIndex: 1,
+                      child: _FinancialSummaryBanner(summary: summary),
                     ),
                     const SizedBox(height: 20),
 
-                     // ── Quick Actions — Emoji Grid ─────────────────────
-                    const _SectionTitle('Management Actions'),
-                    const SizedBox(height: 14),
-                    _QuickActionsGrid(user: user, context: context),
+                    // ── Stat Cards Grid (Modern Vector Icons) ───────────
+                    FadeSlideEntrance(
+                      delayIndex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const _SectionTitle('Overview'),
+                          const SizedBox(height: 12),
+                          GridView.count(
+                            crossAxisCount: 2,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 1.35,
+                            children: [
+                              SummaryCard(
+                                icon: Icons.groups_rounded,
+                                label: 'Active Customers',
+                                value: '${summary.totalCustomers}',
+                                color: AppTheme.primaryColor,
+                                onTap: () => context
+                                    .push('/admin/customers?status=ACTIVE'),
+                              ),
+                              SummaryCard(
+                                icon: Icons.assignment_outlined,
+                                label: 'Active Loans',
+                                value: '${summary.activeLoans}',
+                                color: AppTheme.primaryLight,
+                                onTap: () =>
+                                    context.push('/admin/loans?status=ACTIVE'),
+                              ),
+                              SummaryCard(
+                                icon: Icons.warning_amber_rounded,
+                                label: 'Overdue Loans',
+                                value: '${summary.overdueLoans}',
+                                color: AppTheme.errorColor,
+                                onTap: () =>
+                                    context.push('/admin/dues?tab=overdue'),
+                              ),
+                              SummaryCard(
+                                icon: Icons.payments_rounded,
+                                label: 'Overall Collected',
+                                value:
+                                    Formatters.currency(summary.totalCollected),
+                                color: AppTheme.successColor,
+                                onTap: () => context.push('/admin/payments'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // ── Quick Actions Grid ─────────────────────────────
+                    FadeSlideEntrance(
+                      delayIndex: 3,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const _SectionTitle('Management Actions'),
+                          const SizedBox(height: 14),
+                          _QuickActionsGrid(user: user, context: context),
+                        ],
+                      ),
+                    ),
                   ]),
                 ),
               ),
@@ -212,7 +242,7 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-// ── Financial Summary Banner ──────────────────────────────────────────────────
+// ── Financial Summary Banner with Animated Wave ───────────────────────────────
 
 class _FinancialSummaryBanner extends StatelessWidget {
   const _FinancialSummaryBanner({required this.summary});
@@ -221,7 +251,6 @@ class _FinancialSummaryBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: AppTheme.primaryGradient,
         borderRadius: BorderRadius.circular(22),
@@ -233,80 +262,91 @@ class _FinancialSummaryBanner extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      child: AnimatedWaveBackground(
+        waveOpacity1: 0.10,
+        waveOpacity2: 0.06,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text('📊', style: TextStyle(fontSize: 20)),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
                 children: [
-                  const Text(
-                    'Financial Summary',
-                    style: TextStyle(
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.analytics_rounded,
                       color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.2,
+                      size: 20,
                     ),
                   ),
-                  Text(
-                    'Disbursed, collections & interest profit breakout',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.70),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Financial Summary',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      Text(
+                        'Disbursed, collections & interest profit breakout',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.70),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  _BannerStat(
+                    icon: Icons.account_balance_wallet_outlined,
+                    label: 'Total Disbursed',
+                    value: Formatters.currency(summary.totalDisbursed),
+                  ),
+                  const SizedBox(width: 12),
+                  _BannerStat(
+                    icon: Icons.check_circle_outline_rounded,
+                    label: 'Collected Back',
+                    value: Formatters.currency(summary.totalCollected),
+                    valueColor: AppTheme.accentLime,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _BannerStat(
+                    icon: Icons.trending_up_rounded,
+                    label: 'Profit in Interest',
+                    value: Formatters.currency(summary.totalInterestProfit),
+                    valueColor: const Color(0xFF86EFAC),
+                  ),
+                  const SizedBox(width: 12),
+                  _BannerStat(
+                    icon: Icons.schedule_rounded,
+                    label: 'Outstanding Balance',
+                    value: Formatters.currency(summary.totalOutstanding),
+                    valueColor: const Color(0xFFFFD580),
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 18),
-          Row(
-            children: [
-              _BannerStat(
-                emoji: '🏦',
-                label: 'Total Disbursed',
-                value: Formatters.currency(summary.totalDisbursed),
-              ),
-              const SizedBox(width: 12),
-              _BannerStat(
-                emoji: '✅',
-                label: 'Collected Back',
-                value: Formatters.currency(summary.totalCollected),
-                valueColor: AppTheme.accentLime,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              _BannerStat(
-                emoji: '📈',
-                label: 'Profit in Interest',
-                value: Formatters.currency(summary.totalInterestProfit),
-                valueColor: const Color(0xFF86EFAC),
-              ),
-              const SizedBox(width: 12),
-              _BannerStat(
-                emoji: '⏳',
-                label: 'Outstanding Balance',
-                value: Formatters.currency(summary.totalOutstanding),
-                valueColor: const Color(0xFFFFD580),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -314,12 +354,13 @@ class _FinancialSummaryBanner extends StatelessWidget {
 
 class _BannerStat extends StatelessWidget {
   const _BannerStat({
-    required this.emoji,
+    required this.icon,
     required this.label,
     required this.value,
     this.valueColor,
   });
-  final String emoji;
+
+  final IconData icon;
   final String label;
   final String value;
   final Color? valueColor;
@@ -339,8 +380,8 @@ class _BannerStat extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text(emoji, style: const TextStyle(fontSize: 14)),
-                const SizedBox(width: 5),
+                Icon(icon, color: Colors.white70, size: 14),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     label,
@@ -390,57 +431,57 @@ class _QuickActionsGrid extends StatelessWidget {
       childAspectRatio: 1.0,
       children: [
         _QuickActionCard(
-          emoji: '👤',
+          icon: Icons.people_alt_outlined,
           label: 'Customers',
           color: AppTheme.primaryColor,
           onTap: () => context.push('/admin/customers'),
         ),
         _QuickActionCard(
-          emoji: '🧾',
+          icon: Icons.post_add_rounded,
           label: 'New Loan',
           color: AppTheme.primaryLight,
           onTap: () => context.push('/admin/loans/new'),
         ),
         _QuickActionCard(
-          emoji: '🔔',
+          icon: Icons.notifications_none_rounded,
           label: 'Due Logs',
           color: AppTheme.warningColor,
           onTap: () => context.push('/admin/dues'),
         ),
         _QuickActionCard(
-          emoji: '📊',
+          icon: Icons.insights_rounded,
           label: 'Reports',
           color: AppTheme.accentColor,
           onTap: () => context.push('/admin/reports'),
         ),
         _QuickActionCard(
-          emoji: '🏦',
+          icon: Icons.account_balance_outlined,
           label: 'Chit Funds',
           color: AppTheme.successColor,
           onTap: () => context.push('/admin/chit-funds'),
         ),
         _QuickActionCard(
-          emoji: '📜',
+          icon: Icons.history_edu_rounded,
           label: 'Audit Logs',
           color: AppTheme.textMuted,
           onTap: () => context.push('/admin/audit-logs'),
         ),
         if (user?.isSuperAdmin == true) ...[
           _QuickActionCard(
-            emoji: '⚙️',
+            icon: Icons.manage_accounts_outlined,
             label: 'Admin Mgmt',
             color: AppTheme.primaryDark,
             onTap: () => context.push('/admin/management'),
           ),
           _QuickActionCard(
-            emoji: '📥',
+            icon: Icons.file_download_outlined,
             label: 'Import CSV',
             color: const Color(0xFF0D9488),
             onTap: () => _confirmAndImportLoans(context),
           ),
         ],
         _QuickActionCard(
-          emoji: '🗂️',
+          icon: Icons.folder_shared_outlined,
           label: 'Closed Loans',
           color: AppTheme.textMuted,
           onTap: () => context.push('/admin/closed-loans'),
@@ -456,7 +497,9 @@ class _QuickActionsGrid extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
-            Text('📥 ', style: TextStyle(fontSize: 22)),
+            Icon(Icons.file_download_outlined,
+                color: Color(0xFF0D9488), size: 22),
+            SizedBox(width: 8),
             Text('Import 97 Legacy Loans'),
           ],
         ),
@@ -472,10 +515,12 @@ class _QuickActionsGrid extends StatelessWidget {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0D9488),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Import Now', style: TextStyle(color: Colors.white)),
+            child: const Text('Import Now',
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -490,7 +535,8 @@ class _QuickActionsGrid extends StatelessWidget {
             SizedBox(
               width: 18,
               height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              child:
+                  CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
             ),
             SizedBox(width: 12),
             Text('Importing 97 loans into database...'),
@@ -501,7 +547,8 @@ class _QuickActionsGrid extends StatelessWidget {
     );
 
     try {
-      final response = await ApiClient.instance.client.post('/admin/import-legacy-loans');
+      final response =
+          await ApiClient.instance.client.post('/admin/import-legacy-loans');
       final data = response.data['data'];
       final imported = data?['importedCount'] ?? 97;
       final skipped = data?['skippedCount'] ?? 0;
@@ -511,10 +558,19 @@ class _QuickActionsGrid extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: AppTheme.successColor,
-            content: Text('✅ Successfully imported $imported loans ($skipped skipped)! Refreshing...'),
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded,
+                    color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                      'Successfully imported $imported loans ($skipped skipped)! Refreshing...'),
+                ),
+              ],
+            ),
           ),
         );
-        // Navigate or refresh
         context.go('/admin/dashboard');
       }
     } catch (e) {
@@ -531,103 +587,69 @@ class _QuickActionsGrid extends StatelessWidget {
   }
 }
 
-class _QuickActionCard extends StatefulWidget {
+class _QuickActionCard extends StatelessWidget {
   const _QuickActionCard({
-    required this.emoji,
+    required this.icon,
     required this.label,
     required this.color,
     required this.onTap,
   });
-  final String emoji;
+
+  final IconData icon;
   final String label;
   final Color color;
   final VoidCallback onTap;
 
   @override
-  State<_QuickActionCard> createState() => _QuickActionCardState();
-}
-
-class _QuickActionCardState extends State<_QuickActionCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _scale;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 110),
-    );
-    _scale = Tween<double>(begin: 1.0, end: 0.93).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => _ctrl.forward(),
-      onTapUp: (_) {
-        _ctrl.reverse();
-        widget.onTap();
-      },
-      onTapCancel: () => _ctrl.reverse(),
-      child: AnimatedBuilder(
-        animation: _scale,
-        builder: (context, child) =>
-            Transform.scale(scale: _scale.value, child: child),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppTheme.cardWhite,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: widget.color.withValues(alpha: 0.12),
-                blurRadius: 14,
-                offset: const Offset(0, 5),
+    return InteractiveBounce(
+      onTap: onTap,
+      scaleFactor: 0.93,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.cardWhite,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.black.withValues(alpha: 0.03), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.12),
+              blurRadius: 14,
+              offset: const Offset(0, 5),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(14),
               ),
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textDark,
+                letterSpacing: 0.1,
               ),
-            ],
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(11),
-                decoration: BoxDecoration(
-                  color: widget.color.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Text(widget.emoji,
-                    style: const TextStyle(fontSize: 22)),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                widget.label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textDark,
-                  letterSpacing: 0.1,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
+

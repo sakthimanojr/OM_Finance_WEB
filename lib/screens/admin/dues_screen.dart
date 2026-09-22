@@ -59,10 +59,11 @@ class _DuesScreenState extends ConsumerState<DuesScreen>
           unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
           dividerColor: Colors.transparent,
           tabs: const [
-            Tab(text: "📅 Today's Due"),
-            Tab(text: '👤 By Customer'),
-            Tab(text: '🔥 Overdue'),
+            Tab(text: "Today's Due"),
+            Tab(text: 'By Customer'),
+            Tab(text: 'Overdue'),
           ],
+
         ),
       ),
       body: TabBarView(
@@ -97,7 +98,7 @@ class _TodaysDuesTab extends ConsumerWidget {
             color: AppTheme.accentLime,
             boxShadow: [
               BoxShadow(
-                color: AppTheme.accentLime.withOpacity(0.4),
+                color: AppTheme.accentLime.withValues(alpha: 0.4),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -129,9 +130,10 @@ class _TodaysDuesTab extends ConsumerWidget {
             data: (dues) {
               if (dues.isEmpty) {
                 return const EmptyStateView(
-                    message: 'No dues for today 🎉',
+                    message: 'No dues scheduled for today',
                     icon: Icons.check_circle_outline);
               }
+
               return RefreshIndicator(
                 color: AppTheme.primaryColor,
                 onRefresh: () async => ref.refresh(todaysDuesProvider),
@@ -149,13 +151,13 @@ class _TodaysDuesTab extends ConsumerWidget {
                           fontSize: 13,
                         ),
                       ),
-                      avatarBg: AppTheme.accentColor.withOpacity(0.10),
+                      avatarBg: AppTheme.accentColor.withValues(alpha: 0.10),
                       title: due.customerName ?? 'Unknown customer',
                       subtitle:
                           '${due.loanType?.replaceAll('_', ' ') ?? ''} • Due #${due.dueNumber}',
                       amount: Formatters.currency(due.amount),
                       status: due.status,
-                      borderColor: AppTheme.accentColor.withOpacity(0.08),
+                      borderColor: AppTheme.accentColor.withValues(alpha: 0.08),
                       onTap: () => context.push('/admin/loans/${due.loanId}'),
                     );
                   },
@@ -233,21 +235,21 @@ class _OverdueDuesTab extends ConsumerWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
           decoration: BoxDecoration(
-            color: AppTheme.errorColor.withOpacity(0.10),
+            color: AppTheme.errorColor.withValues(alpha: 0.10),
             border: Border(
               bottom: BorderSide(
-                color: AppTheme.errorColor.withOpacity(0.15),
+                color: AppTheme.errorColor.withValues(alpha: 0.15),
                 width: 1,
               ),
             ),
           ),
-          child: Row(
+          child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.warning_amber_rounded,
                   size: 16, color: AppTheme.errorColor),
-              const SizedBox(width: 8),
-              const Text(
+              SizedBox(width: 8),
+              Text(
                 'All Overdue Dues',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
@@ -267,9 +269,10 @@ class _OverdueDuesTab extends ConsumerWidget {
             data: (dues) {
               if (dues.isEmpty) {
                 return const EmptyStateView(
-                    message: 'No overdue dues 🎉',
+                    message: 'No overdue dues',
                     icon: Icons.check_circle_outline);
               }
+
               return RefreshIndicator(
                 color: AppTheme.primaryColor,
                 onRefresh: () async => ref.refresh(overdueDuesProvider),
@@ -284,7 +287,7 @@ class _OverdueDuesTab extends ConsumerWidget {
                         color: AppTheme.errorColor,
                         size: 18,
                       ),
-                      avatarBg: AppTheme.errorColor.withOpacity(0.10),
+                      avatarBg: AppTheme.errorColor.withValues(alpha: 0.10),
                       title: due.customerName ?? 'Unknown customer',
                       subtitle:
                           '${due.loanType?.replaceAll('_', ' ') ?? ''} • Due #${due.dueNumber}\n'
@@ -292,7 +295,7 @@ class _OverdueDuesTab extends ConsumerWidget {
                       isThreeLine: true,
                       amount: Formatters.currency(due.amount),
                       status: due.status,
-                      borderColor: AppTheme.errorColor.withOpacity(0.12),
+                      borderColor: AppTheme.errorColor.withValues(alpha: 0.12),
                       onTap: () => context.push('/admin/loans/${due.loanId}'),
                     );
                   },
@@ -381,12 +384,12 @@ class _DueListItemState extends State<_DueListItem>
             ),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primaryColor.withOpacity(0.06),
+                color: AppTheme.primaryColor.withValues(alpha: 0.06),
                 blurRadius: 14,
                 offset: const Offset(0, 4),
               ),
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 4,
                 offset: const Offset(0, 1),
               ),
@@ -498,17 +501,17 @@ class _CustomerGroupItemState extends State<_CustomerGroupItem>
             color: Colors.white,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: AppTheme.errorColor.withOpacity(0.10),
+              color: AppTheme.errorColor.withValues(alpha: 0.10),
               width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.errorColor.withOpacity(0.07),
+                color: AppTheme.errorColor.withValues(alpha: 0.07),
                 blurRadius: 14,
                 offset: const Offset(0, 4),
               ),
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 4,
                 offset: const Offset(0, 1),
               ),
@@ -519,7 +522,7 @@ class _CustomerGroupItemState extends State<_CustomerGroupItem>
                 const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
             leading: CircleAvatar(
               radius: 22,
-              backgroundColor: AppTheme.errorColor.withOpacity(0.10),
+              backgroundColor: AppTheme.errorColor.withValues(alpha: 0.10),
               child: Text(
                 widget.name.isNotEmpty ? widget.name[0].toUpperCase() : '?',
                 style: const TextStyle(
@@ -558,7 +561,7 @@ class _CustomerGroupItemState extends State<_CustomerGroupItem>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: AppTheme.errorColor.withOpacity(0.10),
+                    color: AppTheme.errorColor.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(

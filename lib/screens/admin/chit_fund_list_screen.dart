@@ -86,7 +86,7 @@ class _ChitFundCard extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade100),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -110,7 +110,7 @@ class _ChitFundCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: sColor.withOpacity(0.08),
+                          color: sColor.withValues(alpha: 0.08),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -221,7 +221,7 @@ class _MicroTag extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 12, color: color.withOpacity(0.7)),
+        Icon(icon, size: 12, color: color.withValues(alpha: 0.7)),
         const SizedBox(width: 4),
         Text(
           label,

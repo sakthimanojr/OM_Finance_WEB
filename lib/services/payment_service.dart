@@ -37,11 +37,16 @@ class PaymentService {
     }
   }
 
-  Future<Payment> confirmPayment(String paymentId, {String? upiRefNumber}) async {
+  Future<Payment> confirmPayment(String paymentId, {String? upiRefNumber, DateTime? paidAt}) async {
     try {
       final response = await _dio.post(
         ApiConstants.paymentsConfirm,
-        data: {'paymentId': paymentId, if (upiRefNumber != null) 'upiRefNumber': upiRefNumber},
+        data: {
+          'paymentId': paymentId,
+          if (upiRefNumber != null) 'upiRefNumber': upiRefNumber,
+          // Send ISO-8601 string so the backend can backdate paidAt/paidDate
+          if (paidAt != null) 'paidAt': paidAt.toIso8601String(),
+        },
       );
       final data = response.data['data'] as Map<String, dynamic>;
       return Payment.fromJson(data['payment'] as Map<String, dynamic>);

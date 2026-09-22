@@ -40,7 +40,7 @@ class CustomerLoanDetailScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryDark.withOpacity(0.35),
+                      color: AppTheme.primaryDark.withValues(alpha: 0.35),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     ),
@@ -53,7 +53,7 @@ class CustomerLoanDetailScreen extends ConsumerWidget {
                       top: -30,
                       child: CircleAvatar(
                         radius: 60,
-                        backgroundColor: Colors.white.withOpacity(0.04),
+                        backgroundColor: Colors.white.withValues(alpha: 0.04),
                       ),
                     ),
                     Padding(
@@ -80,7 +80,7 @@ class CustomerLoanDetailScreen extends ConsumerWidget {
                                       Text(
                                         'Loan #${loan.loanNumber}',
                                         style: TextStyle(
-                                          color: Colors.white.withOpacity(0.7),
+                                          color: Colors.white.withValues(alpha: 0.7),
                                           fontWeight: FontWeight.w600,
                                           fontSize: 14,
                                         ),
@@ -92,7 +92,7 @@ class CustomerLoanDetailScreen extends ConsumerWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.18),
+                                  color: Colors.white.withValues(alpha: 0.18),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
@@ -134,7 +134,7 @@ class CustomerLoanDetailScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -219,9 +219,9 @@ class CustomerLoanDetailScreen extends ConsumerWidget {
                   final isPaid = due.status == 'PAID';
                   final isOverdue = due.status == 'OVERDUE';
                   final borderColor = isPaid
-                      ? AppTheme.successColor.withOpacity(0.3)
+                      ? AppTheme.successColor.withValues(alpha: 0.3)
                       : isOverdue
-                          ? AppTheme.errorColor.withOpacity(0.3)
+                          ? AppTheme.errorColor.withValues(alpha: 0.3)
                           : Colors.grey.shade100;
 
                   return Container(
@@ -232,7 +232,7 @@ class CustomerLoanDetailScreen extends ConsumerWidget {
                       border: Border.all(color: borderColor),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.02),
+                          color: Colors.black.withValues(alpha: 0.02),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -244,9 +244,9 @@ class CustomerLoanDetailScreen extends ConsumerWidget {
                       leading: CircleAvatar(
                         radius: 16,
                         backgroundColor: isPaid
-                            ? AppTheme.successColor.withOpacity(0.1)
+                            ? AppTheme.successColor.withValues(alpha: 0.1)
                             : isOverdue
-                                ? AppTheme.errorColor.withOpacity(0.1)
+                                ? AppTheme.errorColor.withValues(alpha: 0.1)
                                 : Colors.grey.shade100,
                         child: Text(
                           '${due.dueNumber}',

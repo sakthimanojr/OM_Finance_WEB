@@ -62,7 +62,7 @@ class LoanDetailScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryDark.withOpacity(0.35),
+                      color: AppTheme.primaryDark.withValues(alpha: 0.35),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     ),
@@ -75,7 +75,7 @@ class LoanDetailScreen extends ConsumerWidget {
                       top: -30,
                       child: CircleAvatar(
                         radius: 60,
-                        backgroundColor: Colors.white.withOpacity(0.04),
+                        backgroundColor: Colors.white.withValues(alpha: 0.04),
                       ),
                     ),
                     Padding(
@@ -102,7 +102,7 @@ class LoanDetailScreen extends ConsumerWidget {
                                       Text(
                                         'Loan #${loan.loanNumber}',
                                         style: TextStyle(
-                                          color: Colors.white.withOpacity(0.7),
+                                          color: Colors.white.withValues(alpha: 0.7),
                                           fontWeight: FontWeight.w600,
                                           fontSize: 14,
                                         ),
@@ -114,7 +114,7 @@ class LoanDetailScreen extends ConsumerWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.18),
+                                  color: Colors.white.withValues(alpha: 0.18),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
@@ -133,7 +133,7 @@ class LoanDetailScreen extends ConsumerWidget {
                             Text(
                               loan.customerName!,
                               style: TextStyle(
-                                  color: Colors.white.withOpacity(0.65),
+                                  color: Colors.white.withValues(alpha: 0.65),
                                   fontSize: 14),
                             ),
                           ],
@@ -165,7 +165,7 @@ class LoanDetailScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -289,9 +289,9 @@ class LoanDetailScreen extends ConsumerWidget {
                   final isPaid = due.status == 'PAID';
                   final isOverdue = due.status == 'OVERDUE';
                   final borderColor = isPaid
-                      ? AppTheme.successColor.withOpacity(0.3)
+                      ? AppTheme.successColor.withValues(alpha: 0.3)
                       : isOverdue
-                          ? AppTheme.errorColor.withOpacity(0.3)
+                          ? AppTheme.errorColor.withValues(alpha: 0.3)
                           : Colors.grey.shade100;
 
                   return Container(
@@ -302,7 +302,7 @@ class LoanDetailScreen extends ConsumerWidget {
                       border: Border.all(color: borderColor),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.02),
+                          color: Colors.black.withValues(alpha: 0.02),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -314,9 +314,9 @@ class LoanDetailScreen extends ConsumerWidget {
                       leading: CircleAvatar(
                         radius: 16,
                         backgroundColor: isPaid
-                            ? AppTheme.successColor.withOpacity(0.1)
+                            ? AppTheme.successColor.withValues(alpha: 0.1)
                             : isOverdue
-                                ? AppTheme.errorColor.withOpacity(0.1)
+                                ? AppTheme.errorColor.withValues(alpha: 0.1)
                                 : Colors.grey.shade100,
                         child: Text(
                           '${due.dueNumber}',
@@ -450,6 +450,7 @@ class LoanDetailScreen extends ConsumerWidget {
     String method = 'CASH';
     final refController = TextEditingController();
     bool isProcessing = false;
+    DateTime paidDate = DateTime.now(); // defaults to today; admin can change for backdated entries
 
     showModalBottomSheet(
       context: context,
@@ -488,7 +489,7 @@ class LoanDetailScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.06),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
@@ -505,6 +506,42 @@ class LoanDetailScreen extends ConsumerWidget {
                       ),
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              // ── Payment date picker (for backdated entries) ──────────────
+              GestureDetector(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: paidDate,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime.now(),
+                    helpText: 'Select Payment Date',
+                  );
+                  if (picked != null) setSheetState(() => paidDate = picked);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade400),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.calendar_today_outlined, size: 18, color: AppTheme.primaryColor),
+                      const SizedBox(width: 10),
+                      const Text('Payment Date',
+                          style: TextStyle(color: Colors.grey, fontSize: 13)),
+                      const Spacer(),
+                      Text(
+                        '${paidDate.day.toString().padLeft(2,'0')}/${paidDate.month.toString().padLeft(2,'0')}/${paidDate.year}',
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -529,7 +566,7 @@ class LoanDetailScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryColor.withOpacity(0.3),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -559,6 +596,7 @@ class LoanDetailScreen extends ConsumerWidget {
                                     refController.text.isNotEmpty
                                         ? refController.text
                                         : null,
+                                paidAt: paidDate,
                               );
                               ref.invalidate(loanDetailProvider(loanId));
                               if (context.mounted) {

@@ -92,7 +92,7 @@ class _LoanDetailBody extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: statusColor.withOpacity(0.25),
+                            color: statusColor.withValues(alpha: 0.25),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -269,7 +269,7 @@ class _SectionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -382,7 +382,7 @@ class _RepaymentTimelineItem extends StatelessWidget {
                   height: 28,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppTheme.successColor.withOpacity(0.15),
+                    color: AppTheme.successColor.withValues(alpha: 0.15),
                     border: Border.all(color: AppTheme.successColor, width: 2),
                   ),
                   child: Center(
@@ -400,7 +400,7 @@ class _RepaymentTimelineItem extends StatelessWidget {
                   Expanded(
                     child: Container(
                       width: 2,
-                      color: AppTheme.successColor.withOpacity(0.3),
+                      color: AppTheme.successColor.withValues(alpha: 0.3),
                     ),
                   ),
               ],
@@ -480,7 +480,7 @@ class _MiniTag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(

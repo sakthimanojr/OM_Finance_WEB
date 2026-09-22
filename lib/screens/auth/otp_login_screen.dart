@@ -128,7 +128,7 @@ class _OtpLoginScreenState extends ConsumerState<OtpLoginScreen>
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppTheme.primaryColor.withOpacity(0.4),
+                                    color: AppTheme.primaryColor.withValues(alpha: 0.4),
                                     blurRadius: 18,
                                     offset: const Offset(0, 6),
                                   ),
@@ -155,7 +155,7 @@ class _OtpLoginScreenState extends ConsumerState<OtpLoginScreen>
                                 : 'We\'ll send a one-time password to your phone',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.6),
+                              color: Colors.white.withValues(alpha: 0.6),
                               fontSize: 13,
                             ),
                           ),
@@ -165,9 +165,9 @@ class _OtpLoginScreenState extends ConsumerState<OtpLoginScreen>
                           Container(
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.08),
+                              color: Colors.white.withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: Colors.white.withOpacity(0.12)),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -181,19 +181,19 @@ class _OtpLoginScreenState extends ConsumerState<OtpLoginScreen>
                                   style: const TextStyle(color: Colors.white),
                                   decoration: InputDecoration(
                                     labelText: 'Phone number',
-                                    labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+                                    labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
                                     prefixIcon: Icon(Icons.phone_outlined,
-                                        color: Colors.white.withOpacity(0.7)),
+                                        color: Colors.white.withValues(alpha: 0.7)),
                                     counterText: '',
                                     filled: true,
-                                    fillColor: Colors.white.withOpacity(0.06),
+                                    fillColor: Colors.white.withValues(alpha: 0.06),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(14),
-                                      borderSide: BorderSide(color: Colors.white.withOpacity(0.15)),
+                                      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
                                     ),
                                     disabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(14),
-                                      borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
+                                      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(14),
@@ -221,7 +221,7 @@ class _OtpLoginScreenState extends ConsumerState<OtpLoginScreen>
                                         borderRadius: BorderRadius.circular(14),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: AppTheme.primaryColor.withOpacity(0.3),
+                                            color: AppTheme.primaryColor.withValues(alpha: 0.3),
                                             blurRadius: 12,
                                             offset: const Offset(0, 4),
                                           ),
@@ -263,16 +263,16 @@ class _OtpLoginScreenState extends ConsumerState<OtpLoginScreen>
                                         color: Colors.white, letterSpacing: 6, fontSize: 18),
                                     decoration: InputDecoration(
                                       labelText: '6-digit OTP',
-                                      labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+                                      labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
                                       prefixIcon: Icon(Icons.pin_outlined,
-                                          color: Colors.white.withOpacity(0.7)),
+                                          color: Colors.white.withValues(alpha: 0.7)),
                                       counterText: '',
                                       filled: true,
-                                      fillColor: Colors.white.withOpacity(0.06),
+                                      fillColor: Colors.white.withValues(alpha: 0.06),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide:
-                                            BorderSide(color: Colors.white.withOpacity(0.15)),
+                                            BorderSide(color: Colors.white.withValues(alpha: 0.15)),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
@@ -290,7 +290,7 @@ class _OtpLoginScreenState extends ConsumerState<OtpLoginScreen>
                                         borderRadius: BorderRadius.circular(14),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: AppTheme.primaryColor.withOpacity(0.3),
+                                            color: AppTheme.primaryColor.withValues(alpha: 0.3),
                                             blurRadius: 12,
                                             offset: const Offset(0, 4),
                                           ),
@@ -326,7 +326,7 @@ class _OtpLoginScreenState extends ConsumerState<OtpLoginScreen>
                                     child: Text(
                                       'Change phone number',
                                       style: TextStyle(
-                                        color: Colors.white.withOpacity(0.65),
+                                        color: Colors.white.withValues(alpha: 0.65),
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),

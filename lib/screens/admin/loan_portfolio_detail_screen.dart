@@ -6,8 +6,12 @@ import '../../core/constants/api_constants.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/status_badge.dart';
 import '../../services/report_json_service.dart';
+
+
 import 'loan_detail_screen.dart';
+
 
 class LoanPortfolioDetailScreen extends StatefulWidget {
   const LoanPortfolioDetailScreen({super.key});
@@ -339,21 +343,8 @@ class _LoanPortfolioDetailScreenState extends State<LoanPortfolioDetailScreen> {
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppTheme.statusColor(status).withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${AppTheme.statusEmoji(status)} $status',
-                      style: TextStyle(
-                        color: AppTheme.statusColor(status),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                  StatusBadge(status: status, showIcon: true),
+
                 ],
               ),
               const SizedBox(height: 10),
@@ -363,7 +354,7 @@ class _LoanPortfolioDetailScreenState extends State<LoanPortfolioDetailScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.1),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(

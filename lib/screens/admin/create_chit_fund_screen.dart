@@ -97,7 +97,7 @@ class _CreateChitFundScreenState extends ConsumerState<CreateChitFundScreen> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.accentLime.withOpacity(0.45),
+                            color: AppTheme.accentLime.withValues(alpha: 0.45),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
@@ -108,7 +108,7 @@ class _CreateChitFundScreenState extends ConsumerState<CreateChitFundScreen> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: AppTheme.buttonBlack.withOpacity(0.08),
+                              color: AppTheme.buttonBlack.withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(Icons.calculate_outlined,
@@ -238,7 +238,7 @@ class _CreateChitFundScreenState extends ConsumerState<CreateChitFundScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.10),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.10),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.calendar_today_outlined,
@@ -267,7 +267,7 @@ class _CreateChitFundScreenState extends ConsumerState<CreateChitFundScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppTheme.warningColor.withOpacity(0.10),
+                        color: AppTheme.warningColor.withValues(alpha: 0.10),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.event, color: AppTheme.warningColor, size: 18),

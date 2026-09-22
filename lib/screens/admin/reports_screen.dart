@@ -102,7 +102,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(Icons.analytics_rounded, size: 36, color: Colors.white),
@@ -238,7 +238,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
       margin: const EdgeInsets.only(bottom: 14),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.06),
+      shadowColor: Colors.black.withValues(alpha: 0.06),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
         onTap: _isDownloading ? null : onTap,
@@ -269,7 +269,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
-                                color: tagColor.withOpacity(0.1),
+                                color: tagColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(

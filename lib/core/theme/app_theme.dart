@@ -189,7 +189,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(20),
         ),
         margin: const EdgeInsets.symmetric(vertical: 6),
-        shadowColor: primaryColor.withOpacity(0.10),
+        shadowColor: primaryColor.withValues(alpha: 0.10),
       ),
 
       // ── Input ───────────────────────────────────────────────────────────
@@ -265,7 +265,7 @@ class AppTheme {
       chipTheme: base.chipTheme.copyWith(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         backgroundColor: Colors.white,
-        selectedColor: primaryColor.withOpacity(0.12),
+        selectedColor: primaryColor.withValues(alpha: 0.12),
         labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
         side: BorderSide(color: Colors.grey.shade200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -368,15 +368,15 @@ class AppTheme {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withOpacity(0.08),
+            color: primaryColor.withValues(alpha: 0.08),
             blurRadius: 24, spreadRadius: 0, offset: const Offset(0, 8),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8, offset: const Offset(0, 3),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 2, offset: const Offset(0, 1),
           ),
         ],
@@ -388,7 +388,7 @@ class AppTheme {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: accentLime.withOpacity(0.45),
+            color: accentLime.withValues(alpha: 0.45),
             blurRadius: 20, offset: const Offset(0, 8),
           ),
         ],
@@ -400,11 +400,11 @@ class AppTheme {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: primaryDark.withOpacity(0.45),
+            color: primaryDark.withValues(alpha: 0.45),
             blurRadius: 28, offset: const Offset(0, 12),
           ),
           BoxShadow(
-            color: primaryColor.withOpacity(0.2),
+            color: primaryColor.withValues(alpha: 0.2),
             blurRadius: 8, offset: const Offset(0, 4),
           ),
         ],
@@ -416,11 +416,11 @@ class AppTheme {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0D7A6E).withOpacity(0.4),
+            color: const Color(0xFF0D7A6E).withValues(alpha: 0.4),
             blurRadius: 28, offset: const Offset(0, 12),
           ),
           BoxShadow(
-            color: const Color(0xFF12A98D).withOpacity(0.2),
+            color: const Color(0xFF12A98D).withValues(alpha: 0.2),
             blurRadius: 8, offset: const Offset(0, 4),
           ),
         ],
@@ -433,47 +433,50 @@ class AppTheme {
     double radius = 20,
   }) =>
       BoxDecoration(
-        color: Colors.white.withOpacity(opacity),
+        color: Colors.white.withValues(alpha: opacity),
         borderRadius: BorderRadius.circular(radius),
         border: Border.all(
-          color: Colors.white.withOpacity(borderOpacity),
+          color: Colors.white.withValues(alpha: borderOpacity),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 16, offset: const Offset(0, 6),
           ),
         ],
       );
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Status emoji helper
+  // Status Icon & Display Helpers (Modern, Clean Icons — No Emojis)
   // ─────────────────────────────────────────────────────────────────────────
 
-  static String statusEmoji(String status) {
+  static IconData statusIcon(String status) {
     switch (status.toUpperCase()) {
       case 'PAID':
       case 'SUCCESS':
       case 'COMPLETED':
-        return '✅';
+        return Icons.check_circle_rounded;
       case 'ACTIVE':
-        return '🟢';
+        return Icons.check_circle_outline_rounded;
       case 'MISSED':
       case 'FAILED':
       case 'DEFAULTED':
-        return '🔴';
+        return Icons.cancel_rounded;
       case 'OVERDUE':
       case 'SUSPENDED':
-        return '⚠️';
+        return Icons.error_outline_rounded;
       case 'PENDING':
       case 'INITIATED':
-        return '⏳';
+        return Icons.schedule_rounded;
       case 'PARTIAL':
       case 'PARTIALLY_PAID':
-        return '🔶';
+        return Icons.timelapse_rounded;
       default:
-        return '📋';
+        return Icons.assignment_outlined;
     }
   }
+
+  static String statusEmoji(String status) => '';
 }
+

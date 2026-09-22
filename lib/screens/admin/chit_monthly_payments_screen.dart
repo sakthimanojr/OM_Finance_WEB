@@ -346,15 +346,15 @@ class _PaymentCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.cardWhite,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: statusColor.withOpacity(0.10), width: 1.2),
+        border: Border.all(color: statusColor.withValues(alpha: 0.10), width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryColor.withOpacity(0.06),
+            color: AppTheme.primaryColor.withValues(alpha: 0.06),
             blurRadius: 14,
             offset: const Offset(0, 4),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -364,7 +364,7 @@ class _PaymentCard extends StatelessWidget {
         contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         leading: CircleAvatar(
           radius: 22,
-          backgroundColor: AppTheme.primaryColor.withOpacity(0.10),
+          backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.10),
           child: Text(
             (p.memberName as String? ?? '?').isNotEmpty
                 ? (p.memberName as String)[0].toUpperCase()
@@ -431,12 +431,12 @@ class _MonthCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryColor.withOpacity(0.08),
+            color: AppTheme.primaryColor.withValues(alpha: 0.08),
             blurRadius: 18,
             offset: const Offset(0, 6),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -453,7 +453,7 @@ class _MonthCard extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: (isOpen ? AppTheme.primaryColor : AppTheme.successColor)
-                        .withOpacity(0.10),
+                        .withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -504,7 +504,7 @@ class _MonthCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: AppTheme.successColor.withOpacity(0.10),
+                      color: AppTheme.successColor.withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(Icons.check_circle,

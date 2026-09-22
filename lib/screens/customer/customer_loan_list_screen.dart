@@ -5,6 +5,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/state_views.dart';
 import '../../core/widgets/status_badge.dart';
+import '../../core/widgets/interactive_card.dart';
 import '../../providers/loan_provider.dart';
 
 class CustomerLoanListScreen extends ConsumerWidget {
@@ -19,9 +20,10 @@ class CustomerLoanListScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
-        title: const Text('📋 My Loans',
+        title: const Text('My Loans',
             style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
       ),
+
       body: loansAsync.when(
         loading: () => const LoadingView(),
         error: (err, _) => ErrorView(
@@ -53,14 +55,17 @@ class CustomerLoanListScreen extends ConsumerWidget {
                     ),
                     child: const Row(
                       children: [
-                        Icon(Icons.verified_user_rounded, color: Color(0xFF0D9488), size: 22),
-                        SizedBox(width: 12),
+                        GlowingPulseDot(
+                          color: Color(0xFF0D9488),
+                          size: 6,
+                        ),
+                        SizedBox(width: 10),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'No Active Loans • Account Active 🟢',
+                                'No Active Loans • Account Active',
                                 style: TextStyle(
                                   color: Color(0xFF0D9488),
                                   fontWeight: FontWeight.bold,
@@ -86,7 +91,8 @@ class CustomerLoanListScreen extends ConsumerWidget {
                 final loanIndex = hasActiveLoans ? index : index - 1;
                 final loan = loans[loanIndex];
                 final statusColor = AppTheme.statusColor(loan.status);
-                final emoji = AppTheme.statusEmoji(loan.status);
+                final statusIcon = AppTheme.statusIcon(loan.status);
+
 
                 // Repayment progress
                 final principal =
@@ -97,72 +103,75 @@ class CustomerLoanListScreen extends ConsumerWidget {
                     ? (collected / (principal * 1.3)).clamp(0.0, 1.0)
                     : 0.0;
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.grey.shade100),
-                    boxShadow: [
-                      BoxShadow(
-                        color: statusColor.withOpacity(0.08),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      ),
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(18),
-                    onTap: () => context.push('/customer/loans/${loan.id}'),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: statusColor.withOpacity(0.12),
-                                  borderRadius: BorderRadius.circular(12),
+                return FadeSlideEntrance(
+                  delayIndex: index.clamp(0, 10),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: InteractiveBounce(
+                      onTap: () => context.push('/customer/loans/${loan.id}'),
+                      scaleFactor: 0.98,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: Colors.grey.shade100),
+                          boxShadow: [
+                            BoxShadow(
+                              color: statusColor.withValues(alpha: 0.08),
+                              blurRadius: 16,
+                              offset: const Offset(0, 6),
+                            ),
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.03),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: statusColor.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(statusIcon,
+                                      color: statusColor, size: 20),
                                 ),
-                                child: Text(emoji,
-                                    style: const TextStyle(fontSize: 20)),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${loan.type.replaceAll('_', ' ')} • ${Formatters.currency(loan.principal)}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${loan.type.replaceAll('_', ' ')} • ${Formatters.currency(loan.principal)}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Loan #${loan.loanNumber ?? 'N/A'}',
-                                      style: TextStyle(
-                                        color: Colors.grey.shade500,
-                                        fontSize: 12,
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Loan #${loan.loanNumber ?? 'N/A'}',
+                                        style: TextStyle(
+                                          color: Colors.grey.shade500,
+                                          fontSize: 12,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              StatusBadge(
-                                  status: loan.status, showEmoji: true),
-                            ],
-                          ),
+                                StatusBadge(
+                                    status: loan.status, showIcon: true),
+                              ],
+                            ),
+
                           const SizedBox(height: 12),
                           // Progress bar
                           Column(
@@ -220,8 +229,10 @@ class CustomerLoanListScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-                );
-              },
+                ),
+              );
+            },
+
             ),
           );
         },

@@ -96,7 +96,7 @@ class ChitFundDetailScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryDark.withOpacity(0.35),
+                      color: AppTheme.primaryDark.withValues(alpha: 0.35),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     ),
@@ -109,7 +109,7 @@ class ChitFundDetailScreen extends ConsumerWidget {
                       top: -40,
                       child: CircleAvatar(
                         radius: 80,
-                        backgroundColor: Colors.white.withOpacity(0.04),
+                        backgroundColor: Colors.white.withValues(alpha: 0.04),
                       ),
                     ),
                     Padding(
@@ -133,9 +133,9 @@ class ChitFundDetailScreen extends ConsumerWidget {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: _statusColor(chit.status).withOpacity(0.25),
+                                  color: _statusColor(chit.status).withValues(alpha: 0.25),
                                   borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: _statusColor(chit.status).withOpacity(0.6)),
+                                  border: Border.all(color: _statusColor(chit.status).withValues(alpha: 0.6)),
                                 ),
                                 child: Text(
                                   chit.status,
@@ -185,7 +185,7 @@ class ChitFundDetailScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -316,7 +316,7 @@ class ChitFundDetailScreen extends ConsumerWidget {
                       border: Border.all(color: Colors.grey.shade100),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.02),
+                          color: Colors.black.withValues(alpha: 0.02),
                           blurRadius: 8,
                           offset: const Offset(0, 3),
                         ),
@@ -326,7 +326,7 @@ class ChitFundDetailScreen extends ConsumerWidget {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                       leading: CircleAvatar(
                         radius: 20,
-                        backgroundColor: statusColor.withOpacity(0.1),
+                        backgroundColor: statusColor.withValues(alpha: 0.1),
                         child: Text(
                           m.customerName?.isNotEmpty == true
                               ? m.customerName![0].toUpperCase()
@@ -340,7 +340,7 @@ class ChitFundDetailScreen extends ConsumerWidget {
                           ? Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: AppTheme.successColor.withOpacity(0.12),
+                                color: AppTheme.successColor.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
@@ -355,7 +355,7 @@ class ChitFundDetailScreen extends ConsumerWidget {
                           : Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Colors.blue.withOpacity(0.12),
+                                color: Colors.blue.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: const Text(
@@ -453,7 +453,7 @@ class _ToolsGridCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -474,7 +474,7 @@ class _ToolsGridCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: color, size: 20),
