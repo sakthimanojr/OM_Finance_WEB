@@ -39,6 +39,7 @@ import '../../screens/admin/chit_fund_ledger_screen.dart';
 import '../../screens/admin/chit_fund_reports_screen.dart';
 import '../../screens/customer/my_chits_screen.dart';
 import '../../screens/customer/my_chit_loan_detail_screen.dart';
+import '../../screens/admin/daily_records_screen.dart';
 
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -92,6 +93,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/admin/management', builder: (context, state) => const AdminManagementScreen()),
       GoRoute(path: '/admin/audit-logs', builder: (context, state) => const AuditLogScreen()),
       GoRoute(path: '/admin/closed-loans', builder: (context, state) => const ClosedLoansScreen()),
+      GoRoute(path: '/admin/daily-records', builder: (context, state) => const DailyRecordsScreen()),
       GoRoute(
         path: '/admin/payments',
         builder: (context, state) => AdminPaymentsScreen(month: state.uri.queryParameters['month']),

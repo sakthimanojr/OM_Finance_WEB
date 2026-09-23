@@ -111,4 +111,7 @@ class ApiConstants {
   static String myChitLoanDetail(String chitId, String loanId) =>
       '/my/chits/$chitId/loans/$loanId';
   static String myChitLedger(String chitId) => '/my/chits/$chitId/ledger';
+
+  // Daily Records (Daybook)
+  static const String dailyRecords = '/daily-records';
 }

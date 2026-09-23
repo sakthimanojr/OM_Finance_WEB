@@ -71,8 +71,9 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
     } else if (widget.loan.type == 'MONTHLY') {
       final interest = (principal * rate) / 100;
       final disbursed = principal - interest - fee;
-      final total = principal + interest;
-      final installment = terms > 0 ? (total / terms) : total;
+      final total = principal;
+      final effectiveTerms = terms > 0 ? terms : 5;
+      final installment = effectiveTerms > 0 ? (total / effectiveTerms) : total;
       return {'disbursed': disbursed, 'installment': installment, 'total': total};
     } else {
       // HIGH_VALUE

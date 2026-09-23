@@ -533,6 +533,12 @@ class _QuickActionsGrid extends StatelessWidget {
           color: AppTheme.textMuted,
           onTap: () => context.push('/admin/closed-loans'),
         ),
+        _QuickActionCard(
+          icon: Icons.book_outlined,
+          label: 'Daily Daybook',
+          color: const Color(0xFF5C35C9),
+          onTap: () => context.push('/admin/daily-records'),
+        ),
       ],
     );
   }

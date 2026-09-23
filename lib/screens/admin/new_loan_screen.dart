@@ -61,11 +61,18 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
     }
     final interest = (_principal * _rate) / 100;
     final disbursed = _principal - interest - _fee;
-    // Weekly: customer repays only principal in installments (interest deducted upfront)
-    // Monthly: customer repays principal + interest over term
-    final totalRepayable = _loanType == AppConstants.loanWeekly ? _principal : _principal + interest;
-    final installment = _termCount > 0 ? (_loanType == AppConstants.loanWeekly ? _principal / _termCount : totalRepayable / _termCount) : 0;
-    return {'disbursed': disbursed, 'installment': installment, 'totalRepayable': totalRepayable};
+    // Weekly: customer repays principal in installments (interest deducted upfront)
+    // Monthly: customer repays 20% of principal monthly over 5 months (interest & fee deducted upfront)
+    final totalRepayable = _principal;
+    final terms = _termCount > 0 ? _termCount : (_loanType == AppConstants.loanMonthly ? 5 : 1);
+    final installment = terms > 0 ? (totalRepayable / terms) : 0;
+    return {
+      'disbursed': disbursed,
+      'installment': installment,
+      'totalRepayable': totalRepayable,
+      'upfrontInterest': interest,
+      'upfrontFee': _fee,
+    };
   }
 
   Future<void> _pickDate() async {
@@ -86,6 +93,9 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
     });
     try {
       final service = ref.read(loanServiceProvider);
+      final terms = _loanType == AppConstants.loanHighValue
+          ? null
+          : (_termCount > 0 ? _termCount : (_loanType == AppConstants.loanMonthly ? 5 : 1));
       final loan = await service.createLoan(
         customerId: _customerIdController.text.trim(),
         loanNumber: _loanNumberController.text.trim(),
@@ -93,7 +103,7 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
         principal: _principal,
         interestRate: _rate,
         agreementFee: _fee,
-        termCount: _loanType == AppConstants.loanHighValue ? null : _termCount,
+        termCount: terms,
         startDate: _startDate,
       );
       ref.invalidate(loanListProvider(_customerIdController.text.trim()));
@@ -150,7 +160,12 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                 ButtonSegment(value: AppConstants.loanHighValue, label: Text('High-Value')),
               ],
               selected: {_loanType},
-              onSelectionChanged: (selection) => setState(() => _loanType = selection.first),
+              onSelectionChanged: (selection) => setState(() {
+                _loanType = selection.first;
+                if (_loanType == AppConstants.loanMonthly && _termCountController.text.trim().isEmpty) {
+                  _termCountController.text = '5';
+                }
+              }),
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -176,7 +191,11 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
               TextFormField(
                 controller: _agreementFeeController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Agreement Fee (₹)'),
+                decoration: InputDecoration(
+                  labelText: _loanType == AppConstants.loanMonthly
+                      ? 'Extra Charges / Agreement Fee (₹)'
+                      : 'Agreement Fee (₹)',
+                ),
                 onChanged: (_) => setState(() {}),
               ),
             ],
@@ -186,11 +205,19 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                 controller: _termCountController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: _loanType == AppConstants.loanWeekly ? 'Number of Weeks *' : 'Number of Months *',
+                  labelText: _loanType == AppConstants.loanWeekly
+                      ? 'Number of Weeks *'
+                      : 'Number of Months (Default 5 for 20%/mo) *',
                 ),
                 onChanged: (_) => setState(() {}),
-                validator: (v) =>
-                    (v == null || int.tryParse(v) == null || int.parse(v) <= 0) ? 'Enter a valid term' : null,
+                validator: (v) {
+                  if (_loanType == AppConstants.loanMonthly && (v == null || v.trim().isEmpty)) {
+                    return null;
+                  }
+                  return (v == null || int.tryParse(v) == null || int.parse(v) <= 0)
+                      ? 'Enter a valid term'
+                      : null;
+                },
               ),
             ],
             const SizedBox(height: 12),
@@ -235,8 +262,16 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                     ),
                     const SizedBox(height: 12),
                     _previewRow('Disbursed to customer', '₹${preview['disbursed']?.toStringAsFixed(2)}'),
+                    if (!isHighValue) ...[
+                      _previewRow('Upfront Interest (Income 1)', '₹${preview['upfrontInterest']?.toStringAsFixed(2)}'),
+                      _previewRow('Extra Charges (Income 2)', '₹${preview['upfrontFee']?.toStringAsFixed(2)}'),
+                    ],
                     _previewRow(
-                      isHighValue ? 'Monthly interest' : 'Installment amount',
+                      isHighValue
+                          ? 'Monthly interest'
+                          : (_loanType == AppConstants.loanMonthly
+                              ? 'Monthly EMI (20%)'
+                              : 'Installment amount'),
                       '₹${preview['installment']?.toStringAsFixed(2)}',
                     ),
                     if (preview['totalRepayable'] != null)
