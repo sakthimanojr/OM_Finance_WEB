@@ -196,6 +196,9 @@ class LoanDetailScreen extends ConsumerWidget {
                     _DetailRow(
                         'Interest Rate', '${loan.interestRate}%',
                         valueColor: AppTheme.accentColor),
+                    if (loan.agreementFee > 0)
+                      _DetailRow('Agreement Fee',
+                          Formatters.currency(loan.agreementFee)),
                     _DetailRow('Start Date', Formatters.date(loan.startDate)),
                     if (loan.endDate != null)
                       _DetailRow('End Date', Formatters.date(loan.endDate)),

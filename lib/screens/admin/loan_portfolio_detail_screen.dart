@@ -333,7 +333,8 @@ class _LoanPortfolioDetailScreenState extends State<LoanPortfolioDetailScreen> {
                         Text(
                           customerName,
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textDark),
-                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                          softWrap: true,
                         ),
                         if (phone.isNotEmpty)
                           Text(
@@ -349,7 +350,10 @@ class _LoanPortfolioDetailScreenState extends State<LoanPortfolioDetailScreen> {
               ),
               const SizedBox(height: 10),
               // Loan details row
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -362,7 +366,6 @@ class _LoanPortfolioDetailScreenState extends State<LoanPortfolioDetailScreen> {
                       style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
                     ),
                   ),
-                  const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
@@ -374,11 +377,17 @@ class _LoanPortfolioDetailScreenState extends State<LoanPortfolioDetailScreen> {
                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey.shade700),
                     ),
                   ),
-                  const Spacer(),
                   if (pendingDuesCount > 0)
-                    Text(
-                      '$pendingDuesCount Dues Left',
-                      style: const TextStyle(fontSize: 11, color: Colors.orange, fontWeight: FontWeight.w600),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '$pendingDuesCount Dues Left',
+                        style: const TextStyle(fontSize: 11, color: Colors.orange, fontWeight: FontWeight.w600),
+                      ),
                     ),
                 ],
               ),

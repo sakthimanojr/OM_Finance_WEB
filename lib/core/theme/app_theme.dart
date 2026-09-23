@@ -296,7 +296,7 @@ class AppTheme {
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         elevation: 4,
-        shape: CircleBorder(),
+        shape: StadiumBorder(),
       ),
 
       // ── ListTile ────────────────────────────────────────────────────────

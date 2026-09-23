@@ -58,9 +58,19 @@ class CustomerDetailScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/admin/loans/new?customerId=$customerId'),
-        icon: const Icon(Icons.add),
-        label: const Text('New Loan'),
+        icon: const Icon(Icons.add, color: Colors.white, size: 20),
+        label: const Text(
+          'New Loan',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            fontSize: 13,
+            letterSpacing: 0.2,
+          ),
+        ),
         backgroundColor: AppTheme.accentColor,
+        shape: const StadiumBorder(),
+        elevation: 4,
       ),
       body: customerAsync.when(
         loading: () => const LoadingView(),
@@ -71,7 +81,7 @@ class CustomerDetailScreen extends ConsumerWidget {
             ref.invalidate(loanListProvider(customerId));
           },
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
             children: [
               // Premium profile header card
               Container(

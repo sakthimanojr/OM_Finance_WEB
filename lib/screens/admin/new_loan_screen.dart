@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/formatters.dart';
 import '../../core/widgets/custom_buttons.dart';
 import '../../providers/loan_provider.dart';
 
@@ -32,6 +33,13 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
   void initState() {
     super.initState();
     if (widget.customerId != null) _customerIdController.text = widget.customerId!;
+    if (_loanType == AppConstants.loanMonthly) {
+      _interestRateController.text = '15';
+      _agreementFeeController.text = '100';
+      _termCountController.text = '5';
+    } else if (_loanType == AppConstants.loanWeekly) {
+      _termCountController.text = '10';
+    }
   }
 
   @override
@@ -57,21 +65,27 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
       return {
         'disbursed': _principal,
         'installment': (_principal * _rate) / 100,
+        'totalRepayable': _principal,
+        'upfrontInterest': 0,
+        'upfrontFee': 0,
+        'totalDeductions': 0,
       };
     }
     final interest = (_principal * _rate) / 100;
-    final disbursed = _principal - interest - _fee;
-    // Weekly: customer repays principal in installments (interest deducted upfront)
-    // Monthly: customer repays 20% of principal monthly over 5 months (interest & fee deducted upfront)
+    final fee = _fee;
+    final totalDeductions = interest + fee;
+    final disbursed = _principal - totalDeductions;
+    // Weekly & Monthly: customer repays principal in installments (interest & fee deducted upfront)
     final totalRepayable = _principal;
-    final terms = _termCount > 0 ? _termCount : (_loanType == AppConstants.loanMonthly ? 5 : 1);
+    final terms = _termCount > 0 ? _termCount : (_loanType == AppConstants.loanMonthly ? 5 : 10);
     final installment = terms > 0 ? (totalRepayable / terms) : 0;
     return {
       'disbursed': disbursed,
       'installment': installment,
       'totalRepayable': totalRepayable,
       'upfrontInterest': interest,
-      'upfrontFee': _fee,
+      'upfrontFee': fee,
+      'totalDeductions': totalDeductions,
     };
   }
 
@@ -95,7 +109,7 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
       final service = ref.read(loanServiceProvider);
       final terms = _loanType == AppConstants.loanHighValue
           ? null
-          : (_termCount > 0 ? _termCount : (_loanType == AppConstants.loanMonthly ? 5 : 1));
+          : (_termCount > 0 ? _termCount : (_loanType == AppConstants.loanMonthly ? 5 : 10));
       final loan = await service.createLoan(
         customerId: _customerIdController.text.trim(),
         loanNumber: _loanNumberController.text.trim(),
@@ -162,8 +176,24 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
               selected: {_loanType},
               onSelectionChanged: (selection) => setState(() {
                 _loanType = selection.first;
-                if (_loanType == AppConstants.loanMonthly && _termCountController.text.trim().isEmpty) {
-                  _termCountController.text = '5';
+                if (_loanType == AppConstants.loanMonthly) {
+                  // Monthly defaults: 15% interest, ₹100 agreement fee, 5 months (all editable)
+                  if (_interestRateController.text.trim().isEmpty || _interestRateController.text.trim() == '0') {
+                    _interestRateController.text = '15';
+                  }
+                  if (_agreementFeeController.text.trim().isEmpty || _agreementFeeController.text.trim() == '0') {
+                    _agreementFeeController.text = '100';
+                  }
+                  if (_termCountController.text.trim().isEmpty || _termCountController.text.trim() == '10') {
+                    _termCountController.text = '5';
+                  }
+                } else if (_loanType == AppConstants.loanWeekly) {
+                  if (_termCountController.text.trim().isEmpty || _termCountController.text.trim() == '5') {
+                    _termCountController.text = '10';
+                  }
+                  if (_agreementFeeController.text.trim() == '100') {
+                    _agreementFeeController.text = '0';
+                  }
                 }
               }),
             ),
@@ -171,7 +201,11 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
             TextFormField(
               controller: _principalController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Principal Amount (₹) *'),
+              decoration: const InputDecoration(
+                labelText: 'Principal Amount (₹) *',
+                hintText: 'e.g. 20000',
+                prefixText: '₹ ',
+              ),
               onChanged: (_) => setState(() {}),
               validator: (v) =>
                   (v == null || num.tryParse(v) == null || num.parse(v) <= 0) ? 'Enter a valid amount' : null,
@@ -179,9 +213,15 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _interestRateController,
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
-                labelText: isHighValue ? 'Monthly Interest Rate (%) *' : 'Interest Rate (%) *',
+                labelText: isHighValue
+                    ? 'Monthly Interest Rate (%) *'
+                    : (_loanType == AppConstants.loanMonthly
+                        ? 'Interest Rate (%) — Default 15% (Editable) *'
+                        : 'Interest Rate (%) *'),
+                hintText: _loanType == AppConstants.loanMonthly ? '15' : 'e.g. 10',
+                suffixText: '%',
               ),
               onChanged: (_) => setState(() {}),
               validator: (v) => (v == null || num.tryParse(v) == null) ? 'Enter a valid rate' : null,
@@ -193,8 +233,10 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   labelText: _loanType == AppConstants.loanMonthly
-                      ? 'Extra Charges / Agreement Fee (₹)'
+                      ? 'Agreement Fee / Extra Charges (₹) — Default ₹100 (Editable)'
                       : 'Agreement Fee (₹)',
+                  hintText: _loanType == AppConstants.loanMonthly ? '100' : '0',
+                  prefixText: '₹ ',
                 ),
                 onChanged: (_) => setState(() {}),
               ),
@@ -207,7 +249,8 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                 decoration: InputDecoration(
                   labelText: _loanType == AppConstants.loanWeekly
                       ? 'Number of Weeks *'
-                      : 'Number of Months (Default 5 for 20%/mo) *',
+                      : 'Number of Months — Default 5 Months (Editable) *',
+                  hintText: _loanType == AppConstants.loanWeekly ? '10' : '5',
                 ),
                 onChanged: (_) => setState(() {}),
                 validator: (v) {
@@ -230,54 +273,76 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
             ),
             const SizedBox(height: 16),
             if (_principal > 0)
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppTheme.accentLime,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.accentLime.withValues(alpha: 0.45),
-                      blurRadius: 18,
-                      offset: const Offset(0, 7),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppTheme.buttonBlack.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(Icons.calculate_outlined, color: AppTheme.buttonBlack, size: 18),
+              Builder(
+                builder: (context) {
+                  final terms = _termCount > 0 ? _termCount : (_loanType == AppConstants.loanMonthly ? 5 : 10);
+                  return Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentLime,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.accentLime.withValues(alpha: 0.45),
+                          blurRadius: 18,
+                          offset: const Offset(0, 7),
                         ),
-                        const SizedBox(width: 10),
-                        const Text('Loan Preview', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.textDark)),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    _previewRow('Disbursed to customer', '₹${preview['disbursed']?.toStringAsFixed(2)}'),
-                    if (!isHighValue) ...[
-                      _previewRow('Upfront Interest (Income 1)', '₹${preview['upfrontInterest']?.toStringAsFixed(2)}'),
-                      _previewRow('Extra Charges (Income 2)', '₹${preview['upfrontFee']?.toStringAsFixed(2)}'),
-                    ],
-                    _previewRow(
-                      isHighValue
-                          ? 'Monthly interest'
-                          : (_loanType == AppConstants.loanMonthly
-                              ? 'Monthly EMI (20%)'
-                              : 'Installment amount'),
-                      '₹${preview['installment']?.toStringAsFixed(2)}',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppTheme.buttonBlack.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(Icons.calculate_outlined, color: AppTheme.buttonBlack, size: 18),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _loanType == AppConstants.loanMonthly
+                                    ? 'Monthly Loan Preview ($terms Months @ $_rate%)'
+                                    : 'Loan Preview',
+                                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.textDark),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        _previewRow('Principal Amount', Formatters.currency(_principal)),
+                        if (!isHighValue) ...[
+                          _previewRow('Upfront Interest ($_rate%)', Formatters.currency(preview['upfrontInterest'] ?? 0)),
+                          _previewRow('Agreement Fee (Extra Charges)', Formatters.currency(preview['upfrontFee'] ?? 0)),
+                          _previewRow('Total Deductions', Formatters.currency(preview['totalDeductions'] ?? 0), isBold: true),
+                          const Divider(height: 18, thickness: 1),
+                        ],
+                        _previewRow(
+                          'Net Disbursed to Customer',
+                          Formatters.currency(preview['disbursed'] ?? 0),
+                          isAccent: true,
+                        ),
+                        _previewRow(
+                          isHighValue
+                              ? 'Monthly Interest Due'
+                              : (_loanType == AppConstants.loanMonthly
+                                  ? 'Monthly Installment ($terms months)'
+                                  : 'Weekly Installment ($terms weeks)'),
+                          '${Formatters.currency(preview['installment'] ?? 0)} / ${_loanType == AppConstants.loanMonthly ? "month" : "week"}',
+                        ),
+                        if (preview['totalRepayable'] != null)
+                          _previewRow(
+                            'Total Repayable (Principal)',
+                            '${Formatters.currency(preview['totalRepayable'] ?? 0)} ($terms x ${Formatters.currency(preview['installment'] ?? 0)})',
+                          ),
+                      ],
                     ),
-                    if (preview['totalRepayable'] != null)
-                      _previewRow('Total repayable', '₹${preview['totalRepayable']?.toStringAsFixed(2)}'),
-                  ],
-                ),
+                  );
+                },
               ),
             if (_error != null) ...[
               const SizedBox(height: 12),
@@ -297,13 +362,27 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
     );
   }
 
-  Widget _previewRow(String label, String value) => Padding(
+  Widget _previewRow(String label, String value, {bool isBold = false, bool isAccent = false}) => Padding(
         padding: const EdgeInsets.only(bottom: 6),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(color: AppTheme.textMuted, fontSize: 13)),
-            Text(value, style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textDark, fontSize: 13)),
+            Text(
+              label,
+              style: TextStyle(
+                color: isAccent ? AppTheme.textDark : AppTheme.textMuted,
+                fontWeight: (isBold || isAccent) ? FontWeight.bold : FontWeight.normal,
+                fontSize: isAccent ? 13.5 : 13,
+              ),
+            ),
+            Text(
+              value,
+              style: TextStyle(
+                fontWeight: (isBold || isAccent) ? FontWeight.w800 : FontWeight.w600,
+                color: isAccent ? AppTheme.primaryDark : AppTheme.textDark,
+                fontSize: isAccent ? 14 : 13,
+              ),
+            ),
           ],
         ),
       );

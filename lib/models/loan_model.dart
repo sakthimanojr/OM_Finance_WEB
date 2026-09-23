@@ -8,6 +8,7 @@ class Loan {
     required this.type,
     required this.principal,
     required this.interestRate,
+    this.agreementFee = 0,
     required this.disbursedAmount,
     required this.totalCollection,
     required this.startDate,
@@ -26,6 +27,7 @@ class Loan {
   final String type;
   final num principal;
   final num interestRate;
+  final num agreementFee;
   final num disbursedAmount;
   final num totalCollection;
   final DateTime startDate;
@@ -50,6 +52,7 @@ class Loan {
       type: json['type'] as String,
       principal: _toNum(json['principal']),
       interestRate: _toNum(json['interestRate']),
+      agreementFee: _toNumNullable(json['agreementFee']) ?? 0,
       disbursedAmount: _toNum(json['disbursedAmount']),
       totalCollection: _toNum(json['totalCollection'] ?? 0),
       startDate: DateTime.parse(json['startDate'] as String),

@@ -82,7 +82,8 @@ class _ClosedLoansScreenState extends ConsumerState<ClosedLoansScreen> {
                               child: Text(
                                 loan.customerName,
                                 style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppTheme.textDark),
-                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                                softWrap: true,
                               ),
                             ),
                             Text(
@@ -108,7 +109,7 @@ class _ClosedLoansScreenState extends ConsumerState<ClosedLoansScreen> {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.check_circle_outline, size: 13, color: AppTheme.successColor),
+                            const Icon(Icons.check_circle_outline, size: 13, color: AppTheme.successColor),
                             const SizedBox(width: 4),
                             Text(
                               'Closed on ${dateFormat.format(loan.closedAt)}',

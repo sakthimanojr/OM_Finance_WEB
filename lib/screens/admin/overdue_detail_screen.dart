@@ -288,7 +288,8 @@ class _OverdueDetailScreenState extends State<OverdueDetailScreen> {
                 child: Text(
                   name,
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                  softWrap: true,
                 ),
               ),
               Container(

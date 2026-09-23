@@ -37,9 +37,19 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
   void initState() {
     super.initState();
     _principalController = TextEditingController(text: widget.loan.principal.toString());
-    _interestRateController = TextEditingController(text: widget.loan.interestRate.toString());
-    _agreementFeeController = TextEditingController(text: '0');
-    _termCountController = TextEditingController(text: (widget.loan.termCount ?? 10).toString());
+    _interestRateController = TextEditingController(
+      text: widget.loan.interestRate > 0
+          ? widget.loan.interestRate.toString()
+          : (widget.loan.type == 'MONTHLY' ? '15' : '10'),
+    );
+    _agreementFeeController = TextEditingController(
+      text: widget.loan.agreementFee > 0
+          ? widget.loan.agreementFee.toString()
+          : (widget.loan.type == 'MONTHLY' ? '100' : '0'),
+    );
+    _termCountController = TextEditingController(
+      text: (widget.loan.termCount ?? (widget.loan.type == 'MONTHLY' ? 5 : 10)).toString(),
+    );
   }
 
   @override
@@ -56,29 +66,46 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
     final principal = num.tryParse(_principalController.text) ?? 0;
     final rate = num.tryParse(_interestRateController.text) ?? 0;
     final fee = num.tryParse(_agreementFeeController.text) ?? 0;
-    final terms = int.tryParse(_termCountController.text) ?? (widget.loan.termCount ?? 1);
+    final terms = int.tryParse(_termCountController.text) ??
+        (widget.loan.termCount ?? (widget.loan.type == 'MONTHLY' ? 5 : 10));
 
     if (principal <= 0) {
-      return {'disbursed': 0, 'installment': 0, 'total': 0};
+      return {'disbursed': 0, 'installment': 0, 'total': 0, 'totalDeductions': 0};
     }
 
     if (widget.loan.type == 'WEEKLY') {
       final interest = (principal * rate) / 100;
-      final disbursed = principal - interest - fee;
+      final totalDeductions = interest + fee;
+      final disbursed = principal - totalDeductions;
       final total = principal;
       final installment = terms > 0 ? (principal / terms) : principal;
-      return {'disbursed': disbursed, 'installment': installment, 'total': total};
+      return {
+        'disbursed': disbursed,
+        'installment': installment,
+        'total': total,
+        'upfrontInterest': interest,
+        'upfrontFee': fee,
+        'totalDeductions': totalDeductions,
+      };
     } else if (widget.loan.type == 'MONTHLY') {
       final interest = (principal * rate) / 100;
-      final disbursed = principal - interest - fee;
+      final totalDeductions = interest + fee;
+      final disbursed = principal - totalDeductions;
       final total = principal;
       final effectiveTerms = terms > 0 ? terms : 5;
       final installment = effectiveTerms > 0 ? (total / effectiveTerms) : total;
-      return {'disbursed': disbursed, 'installment': installment, 'total': total};
+      return {
+        'disbursed': disbursed,
+        'installment': installment,
+        'total': total,
+        'upfrontInterest': interest,
+        'upfrontFee': fee,
+        'totalDeductions': totalDeductions,
+      };
     } else {
       // HIGH_VALUE
       final monthlyInterest = (principal * rate) / 100;
-      return {'disbursed': principal, 'installment': monthlyInterest, 'total': principal};
+      return {'disbursed': principal, 'installment': monthlyInterest, 'total': principal, 'totalDeductions': 0};
     }
   }
 
@@ -301,6 +328,19 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
                       ),
                     ),
                     const SizedBox(height: 8),
+                    if (widget.loan.type != 'HIGH_VALUE') ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Total Deductions (Int + Fee):', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                          Text(
+                            Formatters.currency(preview['totalDeductions'] ?? 0),
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.errorColor),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                    ],
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [

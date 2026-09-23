@@ -62,9 +62,19 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/admin/customers/new'),
-        icon: const Icon(Icons.person_add_alt_1),
-        label: const Text('New Customer'),
-        backgroundColor: AppTheme.accentColor,
+        icon: const Icon(Icons.person_add_alt_1, color: Colors.white, size: 20),
+        label: const Text(
+          'New Customer',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            fontSize: 13,
+            letterSpacing: 0.2,
+          ),
+        ),
+        backgroundColor: AppTheme.primaryColor,
+        shape: const StadiumBorder(),
+        elevation: 4,
       ),
       body: Column(
         children: [
@@ -145,7 +155,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                 return RefreshIndicator(
                   onRefresh: () async => ref.refresh(customerListProvider),
                   child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
                     itemCount: customers.length,
                     itemBuilder: (context, index) {
                       final customer = customers[index];
@@ -155,136 +165,263 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                       final displayStatus = isClosedLoan
                           ? 'CLOSED'
                           : (customer.status == 'OVERDUE' ? 'OVERDUE' : 'ACTIVE');
+                      final avatarColor = _avatarColor(customer.name);
+                      final initials = customer.name.isNotEmpty
+                          ? customer.name[0].toUpperCase()
+                          : '?';
 
                       return Container(
-                        margin: const EdgeInsets.only(bottom: 8),
+                        margin: const EdgeInsets.only(bottom: 10),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade100),
+                          border: Border.all(color: Colors.grey.shade200),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.02),
+                              color: Colors.black.withValues(alpha: 0.03),
                               blurRadius: 8,
                               offset: const Offset(0, 3),
                             ),
                           ],
                         ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          leading: Builder(builder: (ctx) {
-                            final avatarColor = _avatarColor(customer.name);
-                            final initials = customer.name.isNotEmpty
-                                ? customer.name[0].toUpperCase()
-                                : '?';
-                            return Container(
-                              width: 46,
-                              height: 46,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    avatarColor,
-                                    avatarColor.withValues(alpha: 0.70),
-                                  ],
-                                ),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: avatarColor.withValues(alpha: 0.30),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 3),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () => context
+                                .push('/admin/customers/${customer.id}'),
+                            child: Padding(
+                              padding: const EdgeInsets.all(14),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Top row: Avatar + Customer Full Name (+ Father's name) + Status Badge
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      // Avatar with initials
+                                      Container(
+                                        width: 44,
+                                        height: 44,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              avatarColor,
+                                              avatarColor.withValues(alpha: 0.75),
+                                            ],
+                                          ),
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: avatarColor.withValues(alpha: 0.25),
+                                              blurRadius: 6,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            initials,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      // Customer Name & Father Name - Full width, never cramped
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              customer.name,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15,
+                                                color: AppTheme.textDark,
+                                                height: 1.2,
+                                              ),
+                                              maxLines: 2,
+                                              softWrap: true,
+                                            ),
+                                            if (customer.fatherName != null &&
+                                                customer.fatherName!.trim().isNotEmpty) ...[
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                'S/o ${customer.fatherName!.trim()}',
+                                                style: TextStyle(
+                                                  fontSize: 11.5,
+                                                  color: Colors.grey.shade600,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      StatusBadge(
+                                          status: displayStatus, showEmoji: true),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 10),
+
+                                  // Details Badges Row (Wrap ensures NO overflow and full visibility on mobile)
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 6,
+                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                    children: [
+                                      // Loan Number Badge
+                                      if (customer.loanNumber != null)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 3.5),
+                                          decoration: BoxDecoration(
+                                            color: isClosedLoan
+                                                ? Colors.grey.shade100
+                                                : AppTheme.primaryColor.withValues(alpha: 0.10),
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(
+                                              color: isClosedLoan
+                                                  ? Colors.grey.shade300
+                                                  : AppTheme.primaryColor.withValues(alpha: 0.30),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.receipt_long_outlined,
+                                                size: 13,
+                                                color: isClosedLoan
+                                                    ? Colors.grey.shade700
+                                                    : AppTheme.primaryColor,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                isClosedLoan
+                                                    ? 'Loan #${customer.loanNumber} (Closed)'
+                                                    : 'Loan #${customer.loanNumber}',
+                                                style: TextStyle(
+                                                  fontSize: 11.5,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: isClosedLoan
+                                                      ? Colors.grey.shade700
+                                                      : AppTheme.primaryColor,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      else
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 3.5),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.shade100,
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(
+                                                color: Colors.grey.shade300),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.money_off_outlined,
+                                                  size: 13,
+                                                  color: Colors.grey.shade500),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'No Active Loan',
+                                                style: TextStyle(
+                                                  fontSize: 11.5,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.grey.shade600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                      // Phone Number Badge
+                                      if (customer.phone.isNotEmpty)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 3.5),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.shade50,
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(
+                                                color: Colors.grey.shade200),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.phone_outlined,
+                                                  size: 12,
+                                                  color: AppTheme.primaryColor),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                customer.phone,
+                                                style: const TextStyle(
+                                                  color: AppTheme.textDark,
+                                                  fontSize: 11.5,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                      // Address Badge if available
+                                      if (customer.address != null &&
+                                          customer.address!.trim().isNotEmpty)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 3.5),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.shade50,
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(
+                                                color: Colors.grey.shade200),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.location_on_outlined,
+                                                  size: 12,
+                                                  color: Colors.grey.shade500),
+                                              const SizedBox(width: 4),
+                                              ConstrainedBox(
+                                                constraints:
+                                                    const BoxConstraints(
+                                                        maxWidth: 160),
+                                                child: Text(
+                                                  customer.address!.trim(),
+                                                  style: TextStyle(
+                                                    fontSize: 11.5,
+                                                    color: Colors.grey.shade600,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ],
                               ),
-                              child: Center(
-                                child: Text(
-                                  initials,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                          title: Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  customer.name,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold, fontSize: 14),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              if (customer.loanNumber != null)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: isClosedLoan
-                                        ? Colors.grey.shade100
-                                        : AppTheme.primaryColor.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(
-                                      color: isClosedLoan
-                                          ? Colors.grey.shade300
-                                          : AppTheme.primaryColor.withValues(alpha: 0.35),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    isClosedLoan
-                                        ? 'Loan #${customer.loanNumber} (Closed)'
-                                        : 'Loan #${customer.loanNumber}',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: isClosedLoan
-                                          ? Colors.grey.shade700
-                                          : AppTheme.primaryColor,
-                                    ),
-                                  ),
-                                )
-                              else
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 7, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade50,
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(color: Colors.grey.shade200),
-                                  ),
-                                  child: Text(
-                                    'No Loan',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.grey.shade500,
-                                    ),
-                                  ),
-                                ),
-                            ],
+                            ),
                           ),
-                          subtitle: Row(
-                            children: [
-                              const Icon(Icons.phone_outlined,
-                                  size: 11, color: AppTheme.textMuted),
-                              const SizedBox(width: 3),
-                              Text(customer.phone,
-                                  style: TextStyle(
-                                      color: Colors.grey.shade500,
-                                      fontSize: 12)),
-                            ],
-                          ),
-                          trailing: StatusBadge(
-                              status: displayStatus, showEmoji: true),
-                          onTap: () => context
-                              .push('/admin/customers/${customer.id}'),
                         ),
                       );
                     },

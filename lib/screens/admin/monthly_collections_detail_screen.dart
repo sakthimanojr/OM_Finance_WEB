@@ -328,7 +328,8 @@ class _MonthlyCollectionsDetailScreenState extends State<MonthlyCollectionsDetai
                       child: Text(
                         name,
                         style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        softWrap: true,
                       ),
                     ),
                     Text(
