@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../constants/api_constants.dart';
 import 'token_storage.dart';
+import 'session_events.dart';
 
 /// Thin wrapper around Dio configured with:
 /// - base URL + JSON headers
@@ -43,8 +44,12 @@ class ApiClient {
                 final response = await _dio.fetch(opts);
                 return handler.resolve(response);
               } catch (_) {
-                // fall through to original error
+                // Retry also failed — session is fully invalid
+                SessionEvents.notifyExpired();
               }
+            } else {
+              // Could not refresh — both tokens are dead
+              SessionEvents.notifyExpired();
             }
           }
           return handler.next(error);

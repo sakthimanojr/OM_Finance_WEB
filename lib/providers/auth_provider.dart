@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/network/session_events.dart';
 import '../core/network/token_storage.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
@@ -23,9 +25,20 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier() : super(AuthState()) {
     _restoreSession();
+    _sessionSub = SessionEvents.onSessionExpired.listen((_) {
+      // Both access and refresh tokens are dead — force logout.
+      logout();
+    });
   }
 
   final AuthService _authService = AuthService();
+  late final StreamSubscription<void> _sessionSub;
+
+  @override
+  void dispose() {
+    _sessionSub.cancel();
+    super.dispose();
+  }
 
   Future<void> _restoreSession() async {
     final hasSession = await TokenStorage.hasSession();
