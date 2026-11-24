@@ -5,6 +5,7 @@ class AdminUser {
     this.email,
     required this.role,
     required this.isActive,
+    this.canEdit = false,
     this.createdAt,
   });
 
@@ -13,6 +14,7 @@ class AdminUser {
   final String? email;
   final String role;
   final bool isActive;
+  final bool canEdit;
   final DateTime? createdAt;
 
   factory AdminUser.fromJson(Map<String, dynamic> json) => AdminUser(
@@ -21,6 +23,7 @@ class AdminUser {
         email: json['email'] as String?,
         role: json['role'] as String,
         isActive: json['isActive'] as bool? ?? true,
+        canEdit: json['canEdit'] as bool? ?? (json['role'] == 'SUPER_ADMIN'),
         createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt']) : null,
       );
 }

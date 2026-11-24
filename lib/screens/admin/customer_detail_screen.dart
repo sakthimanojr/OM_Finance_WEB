@@ -86,11 +86,18 @@ class CustomerDetailScreen extends ConsumerWidget {
               // Premium profile header card
               Container(
                 decoration: BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      customer.dayColor,
+                      customer.dayColor.withValues(alpha: 0.82),
+                    ],
+                  ),
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryDark.withValues(alpha: 0.35),
+                      color: customer.dayColor.withValues(alpha: 0.35),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     ),
@@ -115,7 +122,7 @@ class CustomerDetailScreen extends ConsumerWidget {
                             children: [
                               CircleAvatar(
                                 radius: 30,
-                                backgroundColor: Colors.white.withValues(alpha: 0.15),
+                                backgroundColor: Colors.white.withValues(alpha: 0.20),
                                 child: Text(
                                   customer.name.isNotEmpty
                                       ? customer.name[0].toUpperCase()
@@ -145,8 +152,32 @@ class CustomerDetailScreen extends ConsumerWidget {
                                     Text(
                                       customer.phone,
                                       style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.7),
+                                        color: Colors.white.withValues(alpha: 0.85),
                                         fontSize: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.22),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.calendar_today_outlined, size: 12, color: Colors.white),
+                                          const SizedBox(width: 5),
+                                          Text(
+                                            '${customer.dayName} Loan Profile',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w700,
+                                              letterSpacing: 0.2,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],

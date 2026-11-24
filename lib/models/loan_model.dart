@@ -40,28 +40,32 @@ class Loan {
   final List<Due> dues;
 
   /// Prisma returns Decimal columns as strings; this helper handles both.
-  static num _toNum(dynamic v) => v is num ? v : num.parse(v.toString());
+  static num _toNum(dynamic v) => v is num ? v : (v == null ? 0 : (num.tryParse(v.toString()) ?? 0));
   static num? _toNumNullable(dynamic v) => v == null ? null : _toNum(v);
 
   factory Loan.fromJson(Map<String, dynamic> json) {
     final customer = json['customer'] as Map<String, dynamic>?;
     return Loan(
-      id: json['id'] as String,
-      customerId: json['customerId'] as String,
-      loanNumber: json['loanNumber'] as String?,
-      type: json['type'] as String,
+      id: json['id']?.toString() ?? '',
+      customerId: json['customerId']?.toString() ?? '',
+      loanNumber: json['loanNumber']?.toString(),
+      type: json['type']?.toString() ?? 'WEEKLY',
       principal: _toNum(json['principal']),
       interestRate: _toNum(json['interestRate']),
       agreementFee: _toNumNullable(json['agreementFee']) ?? 0,
       disbursedAmount: _toNum(json['disbursedAmount']),
       totalCollection: _toNum(json['totalCollection'] ?? 0),
-      startDate: DateTime.parse(json['startDate'] as String),
-      endDate: json['endDate'] != null ? DateTime.tryParse(json['endDate']) : null,
-      status: json['status'] as String,
-      termCount: json['termCount'] as int?,
+      startDate: json['startDate'] != null
+          ? (DateTime.tryParse(json['startDate'].toString()) ?? DateTime.now())
+          : DateTime.now(),
+      endDate: json['endDate'] != null ? DateTime.tryParse(json['endDate'].toString()) : null,
+      status: json['status']?.toString() ?? 'ACTIVE',
+      termCount: json['termCount'] is int
+          ? json['termCount'] as int
+          : (int.tryParse(json['termCount']?.toString() ?? '')),
       installmentAmount: _toNumNullable(json['installmentAmount']),
-      customerName: customer?['name'] as String?,
-      customerPhone: customer?['phone'] as String?,
+      customerName: customer?['name']?.toString(),
+      customerPhone: customer?['phone']?.toString(),
       dues: (json['dues'] as List<dynamic>? ?? [])
           .map((d) => Due.fromJson(d as Map<String, dynamic>))
           .toList(),

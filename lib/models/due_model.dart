@@ -27,24 +27,28 @@ class Due {
   final String? customerPhone;
   final String? loanType;
 
-  static num _toNum(dynamic v) => v is num ? v : num.parse(v.toString());
+  static num _toNum(dynamic v) => v is num ? v : (v == null ? 0 : (num.tryParse(v.toString()) ?? 0));
 
   factory Due.fromJson(Map<String, dynamic> json) {
     final loan = json['loan'] as Map<String, dynamic>?;
     final customer = loan?['customer'] as Map<String, dynamic>?;
     return Due(
-      id: json['id'] as String,
-      loanId: json['loanId'] as String,
-      dueNumber: json['dueNumber'] as int,
-      dueDate: DateTime.parse(json['dueDate'] as String),
+      id: json['id']?.toString() ?? '',
+      loanId: json['loanId']?.toString() ?? '',
+      dueNumber: json['dueNumber'] is int
+          ? json['dueNumber'] as int
+          : (int.tryParse(json['dueNumber']?.toString() ?? '0') ?? 0),
+      dueDate: json['dueDate'] != null
+          ? (DateTime.tryParse(json['dueDate'].toString()) ?? DateTime.now())
+          : DateTime.now(),
       amount: _toNum(json['amount']),
-      status: json['status'] as String,
-      paidDate: json['paidDate'] != null ? DateTime.tryParse(json['paidDate']) : null,
+      status: json['status']?.toString() ?? 'PENDING',
+      paidDate: json['paidDate'] != null ? DateTime.tryParse(json['paidDate'].toString()) : null,
       paidAmount: json['paidAmount'] != null ? _toNum(json['paidAmount']) : null,
-      paymentMethod: json['paymentMethod'] as String?,
-      customerName: customer?['name'] as String?,
-      customerPhone: customer?['phone'] as String?,
-      loanType: loan?['type'] as String?,
+      paymentMethod: json['paymentMethod']?.toString(),
+      customerName: customer?['name']?.toString(),
+      customerPhone: customer?['phone']?.toString(),
+      loanType: loan?['type']?.toString(),
     );
   }
 

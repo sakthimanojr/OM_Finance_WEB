@@ -2,26 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/profile_color.dart';
 import '../../core/widgets/state_views.dart';
 import '../../core/widgets/status_badge.dart';
 import '../../providers/customer_provider.dart';
-
-// Deterministic color palette for customer initials
-final _avatarColors = [
-  const Color(0xFF5C35C9), // indigo
-  const Color(0xFF0D7A6E), // teal
-  const Color(0xFFE53935), // red
-  const Color(0xFF9B59B6), // purple
-  const Color(0xFFFF9100), // orange
-  const Color(0xFF1565C0), // blue
-  const Color(0xFF2E7D32), // green
-  const Color(0xFF6D4C41), // brown
-];
-
-Color _avatarColor(String name) {
-  if (name.isEmpty) return AppTheme.primaryColor;
-  return _avatarColors[name.codeUnitAt(0) % _avatarColors.length];
-}
 
 class CustomerListScreen extends ConsumerStatefulWidget {
   const CustomerListScreen({super.key, this.status});
@@ -165,7 +149,9 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                       final displayStatus = isClosedLoan
                           ? 'CLOSED'
                           : (customer.status == 'OVERDUE' ? 'OVERDUE' : 'ACTIVE');
-                      final avatarColor = _avatarColor(customer.name);
+                      // Profile color determined by the day when loan was created:
+                      // Mon: Pink, Tue: Green, Wed: Brown, Thu: Orange, Fri: Sky Blue, Sat: Red, Sun: Black
+                      final avatarColor = customer.dayColor;
                       final initials = customer.name.isNotEmpty
                           ? customer.name[0].toUpperCase()
                           : '?';
@@ -278,6 +264,41 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                                     runSpacing: 6,
                                     crossAxisAlignment: WrapCrossAlignment.center,
                                     children: [
+                                      // Day-of-loan-creation Badge
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 3.5),
+                                        decoration: BoxDecoration(
+                                          color: avatarColor.withValues(alpha: 0.12),
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(
+                                            color: avatarColor.withValues(alpha: 0.40),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              width: 7,
+                                              height: 7,
+                                              decoration: BoxDecoration(
+                                                color: avatarColor,
+                                                shape: BoxShape.circle,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 5),
+                                            Text(
+                                              customer.dayName,
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w700,
+                                                color: avatarColor,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                       // Loan Number Badge
                                       if (customer.loanNumber != null)
                                         Container(

@@ -10,17 +10,29 @@ class AdminManagementService {
     try {
       final response = await _dio.get(ApiConstants.adminViewAdmins);
       final list = response.data['data'] as List<dynamic>;
-      return list.map((e) => AdminUser.fromJson(e as Map<String, dynamic>)).toList();
+      return list
+          .map((e) => AdminUser.fromJson(e as Map<String, dynamic>))
+          .toList();
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
-  Future<AdminUser> createViewAdmin({required String phone, String? email, required String password}) async {
+  Future<AdminUser> createViewAdmin({
+    required String phone,
+    String? email,
+    required String password,
+    bool canEdit = false,
+  }) async {
     try {
       final response = await _dio.post(
         ApiConstants.adminViewAdmins,
-        data: {'phone': phone, if (email != null && email.isNotEmpty) 'email': email, 'password': password},
+        data: {
+          'phone': phone,
+          if (email != null && email.isNotEmpty) 'email': email,
+          'password': password,
+          'canEdit': canEdit,
+        },
       );
       return AdminUser.fromJson(response.data['data'] as Map<String, dynamic>);
     } on DioException catch (e) {
@@ -30,7 +42,17 @@ class AdminManagementService {
 
   Future<void> setAdminActive(String id, bool isActive) async {
     try {
-      await _dio.patch('${ApiConstants.adminViewAdmins}/$id/status', data: {'isActive': isActive});
+      await _dio.patch('${ApiConstants.adminViewAdmins}/$id/status',
+          data: {'isActive': isActive});
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
+  Future<void> setAdminCanEdit(String id, bool canEdit) async {
+    try {
+      await _dio.patch('${ApiConstants.adminViewAdmins}/$id/permissions',
+          data: {'canEdit': canEdit});
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -39,7 +61,8 @@ class AdminManagementService {
   Future<SystemConfig> getConfig() async {
     try {
       final response = await _dio.get(ApiConstants.adminConfig);
-      return SystemConfig.fromJson(response.data['data'] as Map<String, dynamic>);
+      return SystemConfig.fromJson(
+          response.data['data'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -61,7 +84,8 @@ class AdminManagementService {
           if (smtpConfig != null) 'smtpConfig': smtpConfig,
         },
       );
-      return SystemConfig.fromJson(response.data['data'] as Map<String, dynamic>);
+      return SystemConfig.fromJson(
+          response.data['data'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }

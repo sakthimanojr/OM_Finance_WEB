@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import '../core/utils/profile_color.dart';
+
 class Customer {
   Customer({
     required this.id,
@@ -20,6 +23,8 @@ class Customer {
     this.activeLoanNumber,
     this.loanStatus,
     this.loans,
+    this.loanStartDate,
+    this.loanCreatedAt,
   });
 
   final String id;
@@ -42,6 +47,34 @@ class Customer {
   final String? activeLoanNumber;
   final String? loanStatus;
   final List<dynamic>? loans;
+  final DateTime? loanStartDate;
+  final DateTime? loanCreatedAt;
+
+  /// Effective date when the customer's loan was created / started.
+  DateTime? get loanCreationDate {
+    if (loanStartDate != null) return loanStartDate;
+    if (loanCreatedAt != null) return loanCreatedAt;
+    if (loans != null && loans!.isNotEmpty) {
+      final first = loans!.first;
+      if (first is Map) {
+        if (first['startDate'] != null) {
+          final parsed = DateTime.tryParse(first['startDate'].toString());
+          if (parsed != null) return parsed;
+        }
+        if (first['createdAt'] != null) {
+          final parsed = DateTime.tryParse(first['createdAt'].toString());
+          if (parsed != null) return parsed;
+        }
+      }
+    }
+    return createdAt;
+  }
+
+  /// Day-of-the-week profile color based on when the loan was created:
+  /// Mon: Pink, Tue: Green, Wed: Brown, Thu: Orange, Fri: Sky Blue, Sat: Red, Sun: Black
+  Color get dayColor => ProfileDayColor.forDateTime(loanCreationDate);
+  String get dayName => ProfileDayColor.dayName(loanCreationDate);
+  String get shortDay => ProfileDayColor.shortDay(loanCreationDate);
 
   factory Customer.fromJson(Map<String, dynamic> json) => Customer(
         id: json['id'] as String,
@@ -61,10 +94,12 @@ class Customer {
         emergencyContact: json['emergencyContact'] as String?,
         photoUrl: json['photoUrl'] as String?,
         status: json['status'] as String? ?? 'ACTIVE',
-        createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt']) : null,
+        createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null,
         loanNumber: json['loanNumber'] as String?,
         activeLoanNumber: json['activeLoanNumber'] as String?,
         loanStatus: json['loanStatus'] as String?,
         loans: json['loans'] as List<dynamic>?,
+        loanStartDate: json['loanStartDate'] != null ? DateTime.tryParse(json['loanStartDate'].toString()) : null,
+        loanCreatedAt: json['loanCreatedAt'] != null ? DateTime.tryParse(json['loanCreatedAt'].toString()) : null,
       );
 }

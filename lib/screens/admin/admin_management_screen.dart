@@ -65,6 +65,7 @@ class _AdminsTab extends ConsumerWidget {
     final phoneController = TextEditingController();
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
+    bool canEdit = false;
     bool isSubmitting = false;
     String? error;
 
@@ -76,6 +77,7 @@ class _AdminsTab extends ConsumerWidget {
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextField(
                   controller: phoneController,
@@ -92,6 +94,47 @@ class _AdminsTab extends ConsumerWidget {
                   controller: passwordController,
                   obscureText: true,
                   decoration: const InputDecoration(labelText: 'Password *'),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: canEdit ? Colors.green.shade50 : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: canEdit ? Colors.green.shade300 : Colors.grey.shade300),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        canEdit ? Icons.edit_note : Icons.visibility_outlined,
+                        color: canEdit ? Colors.green.shade700 : Colors.grey.shade700,
+                        size: 22,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Allow Edit Access',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                            Text(
+                              canEdit
+                                  ? 'Can do everything like a Super Admin'
+                                  : 'View-only access (cannot edit or create)',
+                              style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: canEdit,
+                        activeColor: Colors.green,
+                        onChanged: (v) => setDialogState(() => canEdit = v),
+                      ),
+                    ],
+                  ),
                 ),
                 if (error != null) ...[
                   const SizedBox(height: 8),
@@ -119,6 +162,7 @@ class _AdminsTab extends ConsumerWidget {
                               phone: phoneController.text.trim(),
                               email: emailController.text.trim(),
                               password: passwordController.text,
+                              canEdit: canEdit,
                             );
                         ref.invalidate(adminListProvider);
                         if (context.mounted) Navigator.pop(dialogContext);
@@ -162,39 +206,216 @@ class _AdminsTab extends ConsumerWidget {
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: admins.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final admin = admins[index];
                 final isSuperAdmin = admin.role == 'SUPER_ADMIN';
+
                 return Card(
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: isSuperAdmin ? AppTheme.primaryColor : Colors.blueGrey,
-                      child: Icon(isSuperAdmin ? Icons.shield_outlined : Icons.visibility_outlined, color: Colors.white),
-                    ),
-                    title: Text(admin.phone),
-                    subtitle: Text(
-                      '${admin.role.replaceAll('_', ' ')}${admin.email != null ? ' • ${admin.email}' : ''}\n'
-                      'Created ${Formatters.date(admin.createdAt)}',
-                    ),
-                    isThreeLine: true,
-                    trailing: isSuperAdmin
-                        ? const Chip(label: Text('Protected'))
-                        : Switch(
-                            value: admin.isActive,
-                            onChanged: (value) async {
-                              try {
-                                await ref.read(adminManagementServiceProvider).setAdminActive(admin.id, value);
-                                ref.invalidate(adminListProvider);
-                              } catch (e) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.errorColor),
-                                  );
-                                }
-                              }
-                            },
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: isSuperAdmin
+                                  ? AppTheme.primaryColor
+                                  : (admin.canEdit ? Colors.teal : Colors.blueGrey),
+                              radius: 20,
+                              child: Icon(
+                                isSuperAdmin
+                                    ? Icons.shield_outlined
+                                    : (admin.canEdit ? Icons.edit_note : Icons.visibility_outlined),
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        admin.phone,
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      if (isSuperAdmin)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: const Text(
+                                            'SUPER ADMIN',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w800,
+                                              color: AppTheme.primaryColor,
+                                            ),
+                                          ),
+                                        )
+                                      else ...[
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: admin.canEdit ? Colors.green.shade50 : Colors.grey.shade100,
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(
+                                              color: admin.canEdit ? Colors.green.shade300 : Colors.grey.shade300,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            admin.canEdit ? 'EDIT ACCESS' : 'VIEW ONLY',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w700,
+                                              color: admin.canEdit ? Colors.green.shade800 : Colors.grey.shade700,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  if (admin.email != null && admin.email!.isNotEmpty)
+                                    Text(
+                                      admin.email!,
+                                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                    ),
+                                  Text(
+                                    'Created ${Formatters.date(admin.createdAt)}',
+                                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // Controls for VIEW_ADMIN
+                        if (!isSuperAdmin) ...[
+                          const Divider(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Allow Edit Access toggle
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      admin.canEdit ? Icons.edit_note : Icons.edit_off_outlined,
+                                      size: 18,
+                                      color: admin.canEdit ? Colors.green : Colors.grey,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Allow Edit Access',
+                                            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                                          ),
+                                          Text(
+                                            admin.canEdit ? 'Can edit like super admin' : 'Read-only',
+                                            style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Switch(
+                                      value: admin.canEdit,
+                                      activeColor: Colors.green,
+                                      onChanged: (value) async {
+                                        try {
+                                          await ref
+                                              .read(adminManagementServiceProvider)
+                                              .setAdminCanEdit(admin.id, value);
+                                          ref.invalidate(adminListProvider);
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  value
+                                                      ? 'Edit access granted to ${admin.phone}'
+                                                      : 'Edit access revoked for ${admin.phone}',
+                                                ),
+                                                backgroundColor:
+                                                    value ? AppTheme.successColor : Colors.grey.shade800,
+                                              ),
+                                            );
+                                          }
+                                        } catch (e) {
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.errorColor),
+                                            );
+                                          }
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // Active / Inactive switch
+                              Row(
+                                children: [
+                                  Text(
+                                    admin.isActive ? 'Active' : 'Inactive',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: admin.isActive ? Colors.black87 : Colors.red,
+                                    ),
+                                  ),
+                                  Switch(
+                                    value: admin.isActive,
+                                    onChanged: (value) async {
+                                      try {
+                                        await ref
+                                            .read(adminManagementServiceProvider)
+                                            .setAdminActive(admin.id, value);
+                                        ref.invalidate(adminListProvider);
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.errorColor),
+                                          );
+                                        }
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
+                        ] else ...[
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Icon(Icons.lock_outline, size: 14, color: Colors.grey.shade600),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Super Admin account — has full permissions',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: Colors.grey.shade600,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 );
               },
