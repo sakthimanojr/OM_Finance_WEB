@@ -68,10 +68,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
             decoration: AppTheme.heroCardDecoration,
             child: Row(
               children: [
-                Expanded(
+                const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'REPORTS & ANALYTICS',
                         style: TextStyle(
@@ -298,9 +298,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                           height: 14,
                                           child: CircularProgressIndicator(strokeWidth: 2),
                                         )
-                                      : Row(
+                                      : const Row(
                                           mainAxisSize: MainAxisSize.min,
-                                          children: const [
+                                          children: [
                                             Icon(Icons.file_download_outlined, size: 14, color: AppTheme.textMuted),
                                             SizedBox(width: 4),
                                             Text(
@@ -335,7 +335,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               const SizedBox(height: 12),
               const Divider(height: 1),
               const SizedBox(height: 10),
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
@@ -346,8 +346,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.arrow_forward, size: 14, color: AppTheme.primaryColor),
+                  SizedBox(width: 4),
+                  Icon(Icons.arrow_forward, size: 14, color: AppTheme.primaryColor),
                 ],
               ),
             ],

@@ -416,21 +416,26 @@ class _DueListItemState extends State<_DueListItem>
               style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
             ),
             isThreeLine: widget.isThreeLine,
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  widget.amount,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
-                    color: AppTheme.textDark,
+            trailing: SizedBox(
+              width: 90,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    widget.amount,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                      color: AppTheme.textDark,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                const SizedBox(height: 4),
-                StatusBadge(status: widget.status),
-              ],
+                  const SizedBox(height: 4),
+                  StatusBadge(status: widget.status),
+                ],
+              ),
             ),
           ),
         ),

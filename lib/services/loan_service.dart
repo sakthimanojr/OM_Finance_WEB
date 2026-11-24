@@ -6,6 +6,15 @@ import '../models/loan_model.dart';
 class LoanService {
   final Dio _dio = ApiClient.instance.client;
 
+  Future<String> fetchNextLoanNumber() async {
+    try {
+      final response = await _dio.get('${ApiConstants.loans}/next-number');
+      return response.data['data']['loanNumber'] as String;
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
   Future<List<Loan>> listLoans({String? customerId, String? status, String? type, int page = 1}) async {
     try {
       final response = await _dio.get(
@@ -35,8 +44,9 @@ class LoanService {
   }
 
   Future<Loan> createLoan({
-    required String customerId,
-    required String loanNumber,
+    String? customerId,
+    Map<String, dynamic>? customer,
+    String? loanNumber,
     required String type,
     required num principal,
     required num interestRate,
@@ -48,8 +58,9 @@ class LoanService {
       final response = await _dio.post(
         ApiConstants.loans,
         data: {
-          'customerId': customerId,
-          'loanNumber': loanNumber,
+          if (customerId != null && customerId.isNotEmpty) 'customerId': customerId,
+          if (customer != null) 'customer': customer,
+          if (loanNumber != null && loanNumber.isNotEmpty) 'loanNumber': loanNumber,
           'type': type,
           'principal': principal,
           'interestRate': interestRate,

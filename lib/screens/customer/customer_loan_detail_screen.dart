@@ -217,7 +217,7 @@ class CustomerLoanDetailScreen extends ConsumerWidget {
               ...loan.dues.map(
                 (due) {
                   final isPaid = due.status == 'PAID';
-                  final isOverdue = due.status == 'OVERDUE';
+                  final isOverdue = due.status == 'OVERDUE' || due.status == 'MISSED';
                   final borderColor = isPaid
                       ? AppTheme.successColor.withValues(alpha: 0.3)
                       : isOverdue
@@ -277,7 +277,7 @@ class CustomerLoanDetailScreen extends ConsumerWidget {
                           if (due.status == 'PAID' && due.paidDate != null)
                             Text(
                               'Paid on ${Formatters.dateTime(due.paidDate!)}',
-                              style: TextStyle(
+                              style: const TextStyle(
                                   color: AppTheme.successColor, fontSize: 11),
                             ),
                         ],

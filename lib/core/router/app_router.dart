@@ -68,7 +68,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/admin/customers',
         builder: (context, state) => CustomerListScreen(status: state.uri.queryParameters['status']),
       ),
-      GoRoute(path: '/admin/customers/new', builder: (context, state) => const NewCustomerScreen()),
+      GoRoute(path: '/admin/customers/new', builder: (context, state) => const NewLoanScreen()),
       GoRoute(
         path: '/admin/customers/:id',
         builder: (context, state) => CustomerDetailScreen(customerId: state.pathParameters['id']!),

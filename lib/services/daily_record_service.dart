@@ -8,16 +8,24 @@ class DailyRecordService {
   /// Fetch a daily record for a specific date (YYYY-MM-DD).
   /// Returns auto-computed + saved data combined.
   Future<Map<String, dynamic>> getRecord(String date) async {
-    final r = await _dio.get(
-      ApiConstants.dailyRecords,
-      queryParameters: {'date': date},
-    );
-    return r.data['data'] as Map<String, dynamic>;
+    try {
+      final r = await _dio.get(
+        ApiConstants.dailyRecords,
+        queryParameters: {'date': date},
+      );
+      return r.data['data'] as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
   }
 
   /// Save (upsert) a daily record for a specific date.
   Future<Map<String, dynamic>> saveRecord(Map<String, dynamic> payload) async {
-    final r = await _dio.post(ApiConstants.dailyRecords, data: payload);
-    return r.data['data'] as Map<String, dynamic>;
+    try {
+      final r = await _dio.post(ApiConstants.dailyRecords, data: payload);
+      return r.data['data'] as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
   }
 }

@@ -29,10 +29,10 @@ class ChitLoansScreen extends ConsumerWidget {
             foregroundColor: Colors.white,
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsetsDirectional.only(start: 20, bottom: 16),
-              title: Column(
+              title: const Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
                     'Chit Loans',
                     style: TextStyle(
@@ -536,7 +536,7 @@ class _CreateChitLoanScreenState extends ConsumerState<CreateChitLoanScreen> {
               data: (members) {
                 final active = members.where((m) => m.status == 'ACTIVE').toList();
                 return DropdownButtonFormField<String>(
-                  value: _memberId,
+                  initialValue: _memberId,
                   hint: const Text('Select Member'),
                   decoration: const InputDecoration(
                     labelText: 'Member *',
@@ -743,7 +743,7 @@ class _ChitLoanDetailScreenState extends ConsumerState<ChitLoanDetailScreen> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: method,
+                initialValue: method,
                 decoration: const InputDecoration(labelText: 'Payment Method'),
                 items: ['CASH', 'UPI', 'BANK_TRANSFER', 'MANUAL']
                     .map((m) => DropdownMenuItem(value: m, child: Text(m)))

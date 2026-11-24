@@ -126,7 +126,7 @@ class _ChitMembersScreenState extends ConsumerState<ChitMembersScreen> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          value: _selectedCustomerId,
+                          initialValue: _selectedCustomerId,
                           hint: const Text(
                             'Select customer to add',
                             style: TextStyle(fontSize: 13),

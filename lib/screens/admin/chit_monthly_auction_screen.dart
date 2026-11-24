@@ -70,7 +70,9 @@ class _ChitMonthlyAuctionScreenState extends ConsumerState<ChitMonthlyAuctionScr
 
   @override
   void dispose() {
-    for (final e in _entries) e.dispose();
+    for (final e in _entries) {
+      e.dispose();
+    }
     super.dispose();
   }
 
@@ -277,9 +279,9 @@ class _ChitMonthlyAuctionScreenState extends ConsumerState<ChitMonthlyAuctionScr
                                 child: const Icon(Icons.gavel, color: AppTheme.primaryColor, size: 18),
                               ),
                               const SizedBox(width: 10),
-                              Text(
+                              const Text(
                                 'Auction #',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   color: AppTheme.primaryColor,
                                   fontSize: 14,
@@ -330,7 +332,7 @@ class _ChitMonthlyAuctionScreenState extends ConsumerState<ChitMonthlyAuctionScr
                           const SizedBox(height: 14),
                           // Winner dropdown
                           DropdownButtonFormField<String>(
-                            value: entry.winnerId,
+                            initialValue: entry.winnerId,
                             hint: const Text('Select Winner'),
                             decoration: const InputDecoration(
                               labelText: 'Winner (eligible only)',

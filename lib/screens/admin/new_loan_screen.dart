@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/custom_buttons.dart';
+import '../../models/customer_model.dart';
+import '../../providers/customer_provider.dart';
 import '../../providers/loan_provider.dart';
 
 class NewLoanScreen extends ConsumerStatefulWidget {
@@ -17,7 +20,24 @@ class NewLoanScreen extends ConsumerStatefulWidget {
 
 class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _customerIdController = TextEditingController();
+
+  // Toggle between existing customer and new customer
+  bool _isNewCustomer = false;
+
+  // Existing customer selection
+  String? _selectedCustomerId;
+
+  // New customer controllers
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _fatherNameController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _aadhaarController = TextEditingController();
+  final _panController = TextEditingController();
+  final _guarantorNameController = TextEditingController();
+  final _guarantorPhoneController = TextEditingController();
+
+  // Loan controllers
   final _loanNumberController = TextEditingController();
   final _principalController = TextEditingController();
   final _interestRateController = TextEditingController();
@@ -28,11 +48,15 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
   DateTime _startDate = DateTime.now();
   bool _isSubmitting = false;
   String? _error;
+  bool _showMoreCustomerFields = false;
 
   @override
   void initState() {
     super.initState();
-    if (widget.customerId != null) _customerIdController.text = widget.customerId!;
+    if (widget.customerId != null) {
+      _selectedCustomerId = widget.customerId;
+      _isNewCustomer = false;
+    }
     if (_loanType == AppConstants.loanMonthly) {
       _interestRateController.text = '15';
       _agreementFeeController.text = '100';
@@ -40,11 +64,29 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
     } else if (_loanType == AppConstants.loanWeekly) {
       _termCountController.text = '10';
     }
+    _loadNextLoanNumber();
+  }
+
+  Future<void> _loadNextLoanNumber() async {
+    try {
+      final service = ref.read(loanServiceProvider);
+      final next = await service.fetchNextLoanNumber();
+      if (mounted && _loanNumberController.text.trim().isEmpty) {
+        setState(() => _loanNumberController.text = next);
+      }
+    } catch (_) {}
   }
 
   @override
   void dispose() {
-    _customerIdController.dispose();
+    _nameController.dispose();
+    _phoneController.dispose();
+    _fatherNameController.dispose();
+    _addressController.dispose();
+    _aadhaarController.dispose();
+    _panController.dispose();
+    _guarantorNameController.dispose();
+    _guarantorPhoneController.dispose();
     _loanNumberController.dispose();
     _principalController.dispose();
     _interestRateController.dispose();
@@ -58,8 +100,6 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
   num get _fee => num.tryParse(_agreementFeeController.text) ?? 0;
   int get _termCount => int.tryParse(_termCountController.text) ?? 0;
 
-  /// Client-side preview of the disbursal math, mirroring the backend
-  /// calculators, so the admin can see the numbers before submitting.
   Map<String, num> get _preview {
     if (_loanType == AppConstants.loanHighValue) {
       return {
@@ -75,7 +115,6 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
     final fee = _fee;
     final totalDeductions = interest + fee;
     final disbursed = _principal - totalDeductions;
-    // Weekly & Monthly: customer repays principal in installments (interest & fee deducted upfront)
     final totalRepayable = _principal;
     final terms = _termCount > 0 ? _termCount : (_loanType == AppConstants.loanMonthly ? 5 : 10);
     final installment = terms > 0 ? (totalRepayable / terms) : 0;
@@ -105,13 +144,36 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
       _isSubmitting = true;
       _error = null;
     });
+
     try {
       final service = ref.read(loanServiceProvider);
       final terms = _loanType == AppConstants.loanHighValue
           ? null
           : (_termCount > 0 ? _termCount : (_loanType == AppConstants.loanMonthly ? 5 : 10));
+
+      Map<String, dynamic>? customerPayload;
+      String? customerIdParam;
+
+      if (_isNewCustomer) {
+        final phone = _phoneController.text.trim();
+        customerPayload = {
+          'name': _nameController.text.trim(),
+          'phone': phone,
+          if (_fatherNameController.text.trim().isNotEmpty) 'fatherName': _fatherNameController.text.trim(),
+          if (_addressController.text.trim().isNotEmpty) 'address': _addressController.text.trim(),
+          if (_aadhaarController.text.trim().isNotEmpty) 'aadhaar': _aadhaarController.text.trim(),
+          if (_panController.text.trim().isNotEmpty) 'pan': _panController.text.trim().toUpperCase(),
+          if (_guarantorNameController.text.trim().isNotEmpty) 'guarantorName': _guarantorNameController.text.trim(),
+          if (_guarantorPhoneController.text.trim().isNotEmpty) 'guarantorPhone': _guarantorPhoneController.text.trim(),
+          'password': phone,
+        };
+      } else {
+        customerIdParam = _selectedCustomerId;
+      }
+
       final loan = await service.createLoan(
-        customerId: _customerIdController.text.trim(),
+        customerId: customerIdParam,
+        customer: customerPayload,
         loanNumber: _loanNumberController.text.trim(),
         type: _loanType,
         principal: _principal,
@@ -120,13 +182,27 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
         termCount: terms,
         startDate: _startDate,
       );
-      ref.invalidate(loanListProvider(_customerIdController.text.trim()));
+
+      ref.invalidate(customerListProvider);
+      ref.invalidate(adminLoanListProvider);
+      if (customerIdParam != null) {
+        ref.invalidate(loanListProvider(customerIdParam));
+      }
+
       if (mounted) {
         context.pop();
         context.push('/admin/loans/${loan.id}');
       }
     } catch (e) {
-      setState(() => _error = e.toString());
+      String msg = e.toString();
+      if (e is ApiException && e.errors != null) {
+        try {
+          final errs = e.errors as Map;
+          final details = errs.values.expand((v) => v is List ? v : [v]).join('\n');
+          msg = details.isNotEmpty ? details : msg;
+        } catch (_) {}
+      }
+      setState(() => _error = msg);
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -136,6 +212,7 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
   Widget build(BuildContext context) {
     final preview = _preview;
     final isHighValue = _loanType == AppConstants.loanHighValue;
+    final customersAsync = ref.watch(customerListProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.surfaceLight,
@@ -149,129 +226,477 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            TextFormField(
-              controller: _customerIdController,
-              decoration: const InputDecoration(labelText: 'Customer ID *'),
-              validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
-              enabled: widget.customerId == null,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _loanNumberController,
-              decoration: const InputDecoration(
-                labelText: 'Loan Number *',
-                hintText: 'e.g. LN-001',
+            // Customer Mode Selector Header
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
+                ],
               ),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter a loan number' : null,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.person, color: AppTheme.primaryColor, size: 18),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Customer Information',
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppTheme.textDark),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  if (widget.customerId == null)
+                    SegmentedButton<bool>(
+                      segments: const [
+                        ButtonSegment(
+                          value: false,
+                          icon: Icon(Icons.people_outline, size: 18),
+                          label: Text('Existing Customer'),
+                        ),
+                        ButtonSegment(
+                          value: true,
+                          icon: Icon(Icons.person_add_alt_1_outlined, size: 18),
+                          label: Text('New Customer'),
+                        ),
+                      ],
+                      selected: {_isNewCustomer},
+                      onSelectionChanged: (selection) {
+                        setState(() {
+                          _isNewCustomer = selection.first;
+                          _error = null;
+                        });
+                      },
+                    ),
+                  const SizedBox(height: 14),
+
+                  // Existing Customer UI
+                  if (!_isNewCustomer) ...[
+                    customersAsync.when(
+                      data: (customers) {
+                        final active = customers.where((c) => c.status == 'ACTIVE').toList();
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            DropdownButtonFormField<String>(
+                              value: _selectedCustomerId,
+                              isExpanded: true,
+                              decoration: const InputDecoration(
+                                labelText: 'Select Customer *',
+                                prefixIcon: Icon(Icons.search, size: 20),
+                                hintText: 'Search or choose customer',
+                              ),
+                              items: active
+                                  .map((c) => DropdownMenuItem(
+                                        value: c.id,
+                                        child: Text('${c.name} (${c.phone})', overflow: TextOverflow.ellipsis),
+                                      ))
+                                  .toList(),
+                              onChanged: (v) => setState(() => _selectedCustomerId = v),
+                              validator: (v) => (v == null || v.isEmpty) ? 'Please select a customer' : null,
+                            ),
+                            if (_selectedCustomerId != null)
+                              Builder(
+                                builder: (context) {
+                                  final cust = active.firstWhere(
+                                    (c) => c.id == _selectedCustomerId,
+                                    orElse: () => Customer(
+                                      id: _selectedCustomerId!,
+                                      name: 'Selected Customer',
+                                      phone: '',
+                                      status: 'ACTIVE',
+                                      createdAt: DateTime.now(),
+                                    ),
+                                  );
+                                  return Container(
+                                    margin: const EdgeInsets.only(top: 10),
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.15)),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.verified_user_outlined, color: AppTheme.primaryColor, size: 20),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                cust.name,
+                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                                              ),
+                                              Text(
+                                                'Phone: ${cust.phone}${cust.address != null && cust.address!.isNotEmpty ? " • ${cust.address}" : ""}',
+                                                style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                                              ),
+                                              const Text(
+                                                'Creating an additional new loan for this customer.',
+                                                style: TextStyle(fontSize: 11, color: Colors.green, fontWeight: FontWeight.w600),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                          ],
+                        );
+                      },
+                      loading: () => const LinearProgressIndicator(),
+                      error: (err, _) => Text('Error loading customers: $err', style: const TextStyle(color: Colors.red)),
+                    ),
+                  ],
+
+                  // New Customer UI
+                  if (_isNewCustomer) ...[
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Customer Full Name *',
+                        prefixIcon: Icon(Icons.badge_outlined, size: 20),
+                        hintText: 'e.g. Ramesh Kumar',
+                      ),
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Customer name is required' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: const InputDecoration(
+                        labelText: 'Mobile Number *',
+                        prefixIcon: Icon(Icons.phone_outlined, size: 20),
+                        hintText: '10-digit mobile number',
+                        prefixText: '+91 ',
+                      ),
+                      onChanged: (phone) {
+                        // Smart detection: check if phone matches existing customer
+                        setState(() {});
+                      },
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'Mobile number is required';
+                        final clean = v.trim().replaceAll(RegExp(r'\D'), '');
+                        if (clean.length < 10) return 'Enter a valid 10-digit number';
+                        return null;
+                      },
+                    ),
+
+                    // Smart detection banner if phone already exists
+                    Builder(
+                      builder: (context) {
+                        final phoneText = _phoneController.text.trim().replaceAll(RegExp(r'\D'), '');
+                        if (phoneText.length >= 10 && customersAsync.hasValue) {
+                          final match = customersAsync.value!.where((c) => c.phone.contains(phoneText)).firstOrNull;
+                          if (match != null) {
+                            return Container(
+                              margin: const EdgeInsets.only(top: 8),
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.green.shade300),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.check_circle_outline, color: Colors.green, size: 18),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Existing customer found: ${match.name} (${match.phone}). This will be registered as a second loan for them.',
+                                      style: TextStyle(fontSize: 12, color: Colors.green.shade800, fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+
+                    const SizedBox(height: 10),
+                    InkWell(
+                      onTap: () => setState(() => _showMoreCustomerFields = !_showMoreCustomerFields),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _showMoreCustomerFields ? 'Hide additional customer details' : '+ Add more customer details (Address, Aadhaar, etc.)',
+                              style: const TextStyle(fontSize: 12.5, color: AppTheme.primaryColor, fontWeight: FontWeight.w600),
+                            ),
+                            Icon(
+                              _showMoreCustomerFields ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                              size: 18,
+                              color: AppTheme.primaryColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    if (_showMoreCustomerFields) ...[
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: _fatherNameController,
+                        decoration: const InputDecoration(
+                          labelText: "Father / Husband Name",
+                          prefixIcon: Icon(Icons.family_restroom_outlined, size: 20),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: _addressController,
+                        maxLines: 2,
+                        decoration: const InputDecoration(
+                          labelText: 'Residential Address',
+                          prefixIcon: Icon(Icons.location_on_outlined, size: 20),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _aadhaarController,
+                              keyboardType: TextInputType.number,
+                              maxLength: 12,
+                              decoration: const InputDecoration(
+                                labelText: 'Aadhaar (12 Digits)',
+                                counterText: '',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _panController,
+                              textCapitalization: TextCapitalization.characters,
+                              maxLength: 10,
+                              decoration: const InputDecoration(
+                                labelText: 'PAN Number',
+                                counterText: '',
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _guarantorNameController,
+                              decoration: const InputDecoration(
+                                labelText: 'Guarantor Name',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _guarantorPhoneController,
+                              keyboardType: TextInputType.phone,
+                              decoration: const InputDecoration(
+                                labelText: 'Guarantor Phone',
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ],
+              ),
             ),
+
             const SizedBox(height: 16),
-            const Text('Loan Type', style: TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(value: AppConstants.loanWeekly, label: Text('Weekly')),
-                ButtonSegment(value: AppConstants.loanMonthly, label: Text('Monthly EMI')),
-                ButtonSegment(value: AppConstants.loanHighValue, label: Text('High-Value')),
-              ],
-              selected: {_loanType},
-              onSelectionChanged: (selection) => setState(() {
-                _loanType = selection.first;
-                if (_loanType == AppConstants.loanMonthly) {
-                  // Monthly defaults: 15% interest, ₹100 agreement fee, 5 months (all editable)
-                  if (_interestRateController.text.trim().isEmpty || _interestRateController.text.trim() == '0') {
-                    _interestRateController.text = '15';
-                  }
-                  if (_agreementFeeController.text.trim().isEmpty || _agreementFeeController.text.trim() == '0') {
-                    _agreementFeeController.text = '100';
-                  }
-                  if (_termCountController.text.trim().isEmpty || _termCountController.text.trim() == '10') {
-                    _termCountController.text = '5';
-                  }
-                } else if (_loanType == AppConstants.loanWeekly) {
-                  if (_termCountController.text.trim().isEmpty || _termCountController.text.trim() == '5') {
-                    _termCountController.text = '10';
-                  }
-                  if (_agreementFeeController.text.trim() == '100') {
-                    _agreementFeeController.text = '0';
-                  }
-                }
-              }),
+
+            // Loan Details Section
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.accentLime.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.monetization_on_outlined, color: AppTheme.textDark, size: 18),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Loan & Disbursal Details',
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppTheme.textDark),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Loan Number
+                  TextFormField(
+                    controller: _loanNumberController,
+                    decoration: const InputDecoration(
+                      labelText: 'Loan Number',
+                      hintText: 'Auto-suggested (e.g. LN-004)',
+                      prefixIcon: Icon(Icons.numbers, size: 20),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Loan Type
+                  const Text('Loan Type', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  const SizedBox(height: 8),
+                  SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment(value: AppConstants.loanWeekly, label: Text('Weekly')),
+                      ButtonSegment(value: AppConstants.loanMonthly, label: Text('Monthly EMI')),
+                      ButtonSegment(value: AppConstants.loanHighValue, label: Text('High-Value')),
+                    ],
+                    selected: {_loanType},
+                    onSelectionChanged: (selection) => setState(() {
+                      _loanType = selection.first;
+                      if (_loanType == AppConstants.loanMonthly) {
+                        if (_interestRateController.text.trim().isEmpty || _interestRateController.text.trim() == '0') {
+                          _interestRateController.text = '15';
+                        }
+                        if (_agreementFeeController.text.trim().isEmpty || _agreementFeeController.text.trim() == '0') {
+                          _agreementFeeController.text = '100';
+                        }
+                        if (_termCountController.text.trim().isEmpty || _termCountController.text.trim() == '10') {
+                          _termCountController.text = '5';
+                        }
+                      } else if (_loanType == AppConstants.loanWeekly) {
+                        if (_termCountController.text.trim().isEmpty || _termCountController.text.trim() == '5') {
+                          _termCountController.text = '10';
+                        }
+                        if (_agreementFeeController.text.trim() == '100') {
+                          _agreementFeeController.text = '0';
+                        }
+                      }
+                    }),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Principal Amount
+                  TextFormField(
+                    controller: _principalController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Principal Amount (₹) *',
+                      hintText: 'e.g. 10000',
+                      prefixText: '₹ ',
+                    ),
+                    onChanged: (_) => setState(() {}),
+                    validator: (v) =>
+                        (v == null || num.tryParse(v) == null || num.parse(v) <= 0) ? 'Enter a valid amount' : null,
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Interest Rate
+                  TextFormField(
+                    controller: _interestRateController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      labelText: isHighValue
+                          ? 'Monthly Interest Rate (%) *'
+                          : (_loanType == AppConstants.loanMonthly
+                              ? 'Interest Rate (%) — Default 15% (Editable) *'
+                              : 'Interest Rate (%) *'),
+                      hintText: _loanType == AppConstants.loanMonthly ? '15' : 'e.g. 10',
+                      suffixText: '%',
+                    ),
+                    onChanged: (_) => setState(() {}),
+                    validator: (v) => (v == null || num.tryParse(v) == null) ? 'Enter a valid rate' : null,
+                  ),
+
+                  // Agreement Fee
+                  if (!isHighValue) ...[
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _agreementFeeController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: _loanType == AppConstants.loanMonthly
+                            ? 'Agreement Fee / Extra Charges (₹) — Default ₹100'
+                            : 'Agreement Fee (₹)',
+                        hintText: _loanType == AppConstants.loanMonthly ? '100' : '0',
+                        prefixText: '₹ ',
+                      ),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ],
+
+                  // Term count
+                  if (!isHighValue) ...[
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _termCountController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: _loanType == AppConstants.loanWeekly
+                            ? 'Number of Weeks *'
+                            : 'Number of Months — Default 5 Months *',
+                        hintText: _loanType == AppConstants.loanWeekly ? '10' : '5',
+                      ),
+                      onChanged: (_) => setState(() {}),
+                      validator: (v) {
+                        if (_loanType == AppConstants.loanMonthly && (v == null || v.trim().isEmpty)) {
+                          return null;
+                        }
+                        return (v == null || int.tryParse(v) == null || int.parse(v) <= 0)
+                            ? 'Enter a valid term'
+                            : null;
+                      },
+                    ),
+                  ],
+
+                  const SizedBox(height: 12),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Start Date', style: TextStyle(fontSize: 14)),
+                    subtitle: Text('${_startDate.day}/${_startDate.month}/${_startDate.year}'),
+                    trailing: const Icon(Icons.calendar_today_outlined, size: 20),
+                    onTap: _pickDate,
+                  ),
+                ],
+              ),
             ),
+
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _principalController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Principal Amount (₹) *',
-                hintText: 'e.g. 20000',
-                prefixText: '₹ ',
-              ),
-              onChanged: (_) => setState(() {}),
-              validator: (v) =>
-                  (v == null || num.tryParse(v) == null || num.parse(v) <= 0) ? 'Enter a valid amount' : null,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _interestRateController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(
-                labelText: isHighValue
-                    ? 'Monthly Interest Rate (%) *'
-                    : (_loanType == AppConstants.loanMonthly
-                        ? 'Interest Rate (%) — Default 15% (Editable) *'
-                        : 'Interest Rate (%) *'),
-                hintText: _loanType == AppConstants.loanMonthly ? '15' : 'e.g. 10',
-                suffixText: '%',
-              ),
-              onChanged: (_) => setState(() {}),
-              validator: (v) => (v == null || num.tryParse(v) == null) ? 'Enter a valid rate' : null,
-            ),
-            if (!isHighValue) ...[
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _agreementFeeController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: _loanType == AppConstants.loanMonthly
-                      ? 'Agreement Fee / Extra Charges (₹) — Default ₹100 (Editable)'
-                      : 'Agreement Fee (₹)',
-                  hintText: _loanType == AppConstants.loanMonthly ? '100' : '0',
-                  prefixText: '₹ ',
-                ),
-                onChanged: (_) => setState(() {}),
-              ),
-            ],
-            if (!isHighValue) ...[
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _termCountController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: _loanType == AppConstants.loanWeekly
-                      ? 'Number of Weeks *'
-                      : 'Number of Months — Default 5 Months (Editable) *',
-                  hintText: _loanType == AppConstants.loanWeekly ? '10' : '5',
-                ),
-                onChanged: (_) => setState(() {}),
-                validator: (v) {
-                  if (_loanType == AppConstants.loanMonthly && (v == null || v.trim().isEmpty)) {
-                    return null;
-                  }
-                  return (v == null || int.tryParse(v) == null || int.parse(v) <= 0)
-                      ? 'Enter a valid term'
-                      : null;
-                },
-              ),
-            ],
-            const SizedBox(height: 12),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Start Date'),
-              subtitle: Text('${_startDate.day}/${_startDate.month}/${_startDate.year}'),
-              trailing: const Icon(Icons.calendar_today_outlined),
-              onTap: _pickDate,
-            ),
-            const SizedBox(height: 16),
+
+            // Live Loan Preview
             if (_principal > 0)
               Builder(
                 builder: (context) {
@@ -344,10 +769,29 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                   );
                 },
               ),
+
             if (_error != null) ...[
               const SizedBox(height: 12),
-              Text(_error!, style: const TextStyle(color: AppTheme.errorColor)),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.red.shade200),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.error_outline, color: AppTheme.errorColor, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(_error!, style: const TextStyle(color: AppTheme.errorColor, fontSize: 13)),
+                    ),
+                  ],
+                ),
+              ),
             ],
+
             const SizedBox(height: 24),
             AnimatedGradientButton(
               onPressed: _isSubmitting ? null : _submit,

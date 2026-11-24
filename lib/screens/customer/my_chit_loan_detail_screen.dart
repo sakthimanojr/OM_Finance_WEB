@@ -97,7 +97,7 @@ class _LoanDetailBody extends StatelessWidget {
                           ),
                           child: Text(
                             loan.status.replaceAll('_', ' '),
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 11,
@@ -105,9 +105,9 @@ class _LoanDetailBody extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
-                        Icon(Icons.lock_outlined, color: Colors.white54, size: 16),
+                        const Icon(Icons.lock_outlined, color: Colors.white54, size: 16),
                         const SizedBox(width: 4),
-                        Text(
+                        const Text(
                           'Read Only',
                           style: TextStyle(color: Colors.white54, fontSize: 11),
                         ),
@@ -388,7 +388,7 @@ class _RepaymentTimelineItem extends StatelessWidget {
                   child: Center(
                     child: Text(
                       '$index',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.successColor,

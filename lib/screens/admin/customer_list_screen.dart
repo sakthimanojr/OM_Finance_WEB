@@ -61,10 +61,10 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/admin/customers/new'),
-        icon: const Icon(Icons.person_add_alt_1, color: Colors.white, size: 20),
+        onPressed: () => context.push('/admin/loans/new'),
+        icon: const Icon(Icons.add_card_outlined, color: Colors.white, size: 20),
         label: const Text(
-          'New Customer',
+          'New Loan',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -266,8 +266,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      StatusBadge(
-                                          status: displayStatus, showEmoji: true),
+                                      _buildStatusBadge(customer, isClosedLoan, displayStatus),
                                     ],
                                   ),
 
@@ -433,6 +432,54 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildStatusBadge(customer, bool isClosedLoan, String displayStatus) {
+    final isActiveTab = ref.watch(customerStatusFilterProvider) == 'ACTIVE';
+
+    // On Active tab: show overdue status instead of ACTIVE badge
+    if (isActiveTab && !isClosedLoan) {
+      final isOverdue = customer.status == 'OVERDUE' ||
+          customer.loanStatus == 'OVERDUE';
+      final color = isOverdue ? const Color(0xFFE53935) : const Color(0xFF2E7D32);
+      final label = isOverdue ? 'Overdue' : 'No Overdue';
+      final icon = isOverdue ? Icons.warning_amber_rounded : Icons.check_circle_outline;
+
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withValues(alpha: 0.35), width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // On All Customers / Closed tab: show normal status badge
+    return StatusBadge(status: displayStatus, showEmoji: true);
   }
 }
 
