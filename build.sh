@@ -13,9 +13,10 @@ fi
 # Add Flutter to PATH
 export PATH="$PATH:`pwd`/flutter/bin"
 
-# Enable web support
+# Enable web support & configure platform
 echo "Configuring Flutter for Web..."
 flutter config --enable-web --no-analytics
+flutter create . --platforms web
 
 # Install dependencies
 echo "Getting dependencies..."
