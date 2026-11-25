@@ -121,5 +121,27 @@ class LoanService {
       throw ApiException.fromDioError(e);
     }
   }
+
+  Future<Map<String, dynamic>> batchCloseLoans({
+    required List<String> loanIds,
+    String paymentMethod = 'BANK_TRANSFER',
+    DateTime? paidAt,
+    String? remarks,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '${ApiConstants.loans}/batch-close',
+        data: {
+          'loanIds': loanIds,
+          'paymentMethod': paymentMethod,
+          if (paidAt != null) 'paidAt': paidAt.toIso8601String(),
+          if (remarks != null) 'remarks': remarks,
+        },
+      );
+      return response.data['data'] as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
 }
 

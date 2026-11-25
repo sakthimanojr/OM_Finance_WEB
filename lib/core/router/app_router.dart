@@ -7,9 +7,9 @@ import '../../screens/auth/otp_login_screen.dart';
 import '../../screens/auth/forgot_password_screen.dart';
 import '../../screens/admin/admin_dashboard_screen.dart';
 import '../../screens/admin/customer_list_screen.dart';
-import '../../screens/admin/new_customer_screen.dart';
 import '../../screens/admin/customer_detail_screen.dart';
 import '../../screens/admin/new_loan_screen.dart';
+import '../../screens/admin/batch_close_loans_screen.dart';
 import '../../screens/admin/loan_detail_screen.dart';
 import '../../screens/admin/dues_screen.dart';
 import '../../screens/admin/reports_screen.dart';
@@ -76,6 +76,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin/loans/new',
         builder: (context, state) => NewLoanScreen(customerId: state.uri.queryParameters['customerId']),
+      ),
+      GoRoute(
+        path: '/admin/loans/batch-close',
+        builder: (context, state) => const BatchCloseLoansScreen(),
       ),
       GoRoute(
         path: '/admin/loans/:id',

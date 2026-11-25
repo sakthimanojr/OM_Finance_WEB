@@ -43,6 +43,13 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                   : 'All Loans'),
           style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.playlist_add_check_circle_outlined, size: 24),
+            tooltip: 'Close Active Loans (Checkbox)',
+            onPressed: () => context.push('/admin/loans/batch-close'),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/admin/loans/new'),

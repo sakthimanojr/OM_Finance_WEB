@@ -528,6 +528,12 @@ class _QuickActionsGrid extends StatelessWidget {
           ),
         ],
         _QuickActionCard(
+          icon: Icons.playlist_add_check_circle_outlined,
+          label: 'Batch Close',
+          color: const Color(0xFFE53935),
+          onTap: () => context.push('/admin/loans/batch-close'),
+        ),
+        _QuickActionCard(
           icon: Icons.folder_shared_outlined,
           label: 'Closed Loans',
           color: AppTheme.textMuted,
