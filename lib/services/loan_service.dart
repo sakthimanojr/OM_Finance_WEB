@@ -53,6 +53,7 @@ class LoanService {
     num agreementFee = 0,
     int? termCount,
     required DateTime startDate,
+    String disbursementMethod = 'CASH',
   }) async {
     try {
       final response = await _dio.post(
@@ -67,6 +68,7 @@ class LoanService {
           'agreementFee': agreementFee,
           if (termCount != null) 'termCount': termCount,
           'startDate': startDate.toIso8601String(),
+          'disbursementMethod': disbursementMethod,
         },
       );
       return Loan.fromJson(response.data['data'] as Map<String, dynamic>);

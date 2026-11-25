@@ -21,12 +21,14 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
   Map<String, dynamic>? _record;
 
   // Editable controllers
-  final _openingBalanceCtrl = TextEditingController();
+  final _openingBalanceBagCtrl = TextEditingController();
+  final _openingBalanceBankCtrl = TextEditingController();
   final _otherIncome1LabelCtrl = TextEditingController();
   final _otherIncome1Ctrl = TextEditingController();
   final _otherIncome2LabelCtrl = TextEditingController();
   final _otherIncome2Ctrl = TextEditingController();
-  final _expensesCtrl = TextEditingController();
+  final _expensesBagCtrl = TextEditingController();
+  final _expensesBankCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
 
   @override
@@ -37,12 +39,14 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
 
   @override
   void dispose() {
-    _openingBalanceCtrl.dispose();
+    _openingBalanceBagCtrl.dispose();
+    _openingBalanceBankCtrl.dispose();
     _otherIncome1LabelCtrl.dispose();
     _otherIncome1Ctrl.dispose();
     _otherIncome2LabelCtrl.dispose();
     _otherIncome2Ctrl.dispose();
-    _expensesCtrl.dispose();
+    _expensesBagCtrl.dispose();
+    _expensesBankCtrl.dispose();
     _notesCtrl.dispose();
     super.dispose();
   }
@@ -75,57 +79,112 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
   }
 
   void _populateControllers(Map<String, dynamic> data) {
-    _openingBalanceCtrl.text =
-        (data['openingBalance'] as num? ?? 0).toStringAsFixed(2);
+    final bagOpening = (data['openingBalanceBag'] as num? ?? data['openingBalance'] as num? ?? 0).toDouble();
+    final bankOpening = (data['openingBalanceBank'] as num? ?? 0).toDouble();
+    _openingBalanceBagCtrl.text = bagOpening.toStringAsFixed(2);
+    _openingBalanceBankCtrl.text = bankOpening.toStringAsFixed(2);
+
+    final bagExpenses = (data['expensesBag'] as num? ?? data['expenses'] as num? ?? 0).toDouble();
+    final bankExpenses = (data['expensesBank'] as num? ?? 0).toDouble();
+    _expensesBagCtrl.text = bagExpenses.toStringAsFixed(2);
+    _expensesBankCtrl.text = bankExpenses.toStringAsFixed(2);
+
     _otherIncome1LabelCtrl.text = data['otherIncome1Label'] as String? ?? '';
     _otherIncome1Ctrl.text =
         (data['otherIncome1Amount'] as num? ?? 0).toStringAsFixed(2);
     _otherIncome2LabelCtrl.text = data['otherIncome2Label'] as String? ?? '';
     _otherIncome2Ctrl.text =
         (data['otherIncome2Amount'] as num? ?? 0).toStringAsFixed(2);
-    _expensesCtrl.text =
-        (data['expenses'] as num? ?? 0).toStringAsFixed(2);
     _notesCtrl.text = data['notes'] as String? ?? '';
   }
 
-  /// Computes the live closing balance from current form inputs + auto-computed fields
-  double _computeClosingBalance() {
-    final opening = double.tryParse(_openingBalanceCtrl.text) ?? 0;
-    final billIncome =
-        (_record?['autoBillIncome'] as num? ?? 0).toDouble();
-    final loanIncome =
-        (_record?['loansGivenIncome'] as num? ?? 0).toDouble();
-    final loanPrincipal =
-        (_record?['loansGivenPrincipal'] as num? ?? 0).toDouble();
-    final otherIncome1 = double.tryParse(_otherIncome1Ctrl.text) ?? 0;
-    final otherIncome2 = double.tryParse(_otherIncome2Ctrl.text) ?? 0;
-    final expenses = double.tryParse(_expensesCtrl.text) ?? 0;
+  /// Computes the live closing balance breakdown from current form inputs + auto-computed fields
+  Map<String, double> _computeBalances() {
+    final openingBag = double.tryParse(_openingBalanceBagCtrl.text) ?? 0;
+    final openingBank = double.tryParse(_openingBalanceBankCtrl.text) ?? 0;
 
-    return opening +
-        billIncome +
-        loanIncome +
-        otherIncome1 +
-        otherIncome2 -
-        loanPrincipal -
-        expenses;
+    final billIncomeBag =
+        (_record?['autoBillIncomeBag'] as num? ?? _record?['autoBillIncome'] as num? ?? 0).toDouble();
+    final billIncomeBank =
+        (_record?['autoBillIncomeBank'] as num? ?? 0).toDouble();
+
+    final loanIncomeBag =
+        (_record?['loansGivenIncomeBag'] as num? ?? _record?['loansGivenIncome'] as num? ?? 0).toDouble();
+    final loanIncomeBank =
+        (_record?['loansGivenIncomeBank'] as num? ?? 0).toDouble();
+
+    final loanPrincipalBag =
+        (_record?['loansGivenPrincipalBag'] as num? ?? _record?['loansGivenPrincipal'] as num? ?? 0).toDouble();
+    final loanPrincipalBank =
+        (_record?['loansGivenPrincipalBank'] as num? ?? 0).toDouble();
+
+    final otherIncome1 = double.tryParse(_otherIncome1Ctrl.text) ?? 0; // Assigned to Bag
+    final otherIncome2 = double.tryParse(_otherIncome2Ctrl.text) ?? 0; // Assigned to Bank
+
+    final expensesBag = double.tryParse(_expensesBagCtrl.text) ?? 0;
+    final expensesBank = double.tryParse(_expensesBankCtrl.text) ?? 0;
+
+    final closingBag = openingBag + billIncomeBag + loanIncomeBag + otherIncome1 - loanPrincipalBag - expensesBag;
+    final closingBank = openingBank + billIncomeBank + loanIncomeBank + otherIncome2 - loanPrincipalBank - expensesBank;
+    final totalClosing = closingBag + closingBank;
+
+    return {
+      'openingBag': openingBag,
+      'openingBank': openingBank,
+      'totalOpening': openingBag + openingBank,
+      'billIncomeBag': billIncomeBag,
+      'billIncomeBank': billIncomeBank,
+      'totalBillIncome': billIncomeBag + billIncomeBank,
+      'loanIncomeBag': loanIncomeBag,
+      'loanIncomeBank': loanIncomeBank,
+      'totalLoanIncome': loanIncomeBag + loanIncomeBank,
+      'loanPrincipalBag': loanPrincipalBag,
+      'loanPrincipalBank': loanPrincipalBank,
+      'totalLoanPrincipal': loanPrincipalBag + loanPrincipalBank,
+      'expensesBag': expensesBag,
+      'expensesBank': expensesBank,
+      'totalExpenses': expensesBag + expensesBank,
+      'otherIncome1': otherIncome1,
+      'otherIncome2': otherIncome2,
+      'closingBag': closingBag,
+      'closingBank': closingBank,
+      'totalClosing': totalClosing,
+    };
   }
 
   Future<void> _save() async {
     setState(() => _isSaving = true);
     try {
       final record = _record;
+      final openingBag = double.tryParse(_openingBalanceBagCtrl.text) ?? 0;
+      final openingBank = double.tryParse(_openingBalanceBankCtrl.text) ?? 0;
+      final expensesBag = double.tryParse(_expensesBagCtrl.text) ?? 0;
+      final expensesBank = double.tryParse(_expensesBankCtrl.text) ?? 0;
+
       await _service.saveRecord({
         'date': _dateKey(_selectedDate),
-        'openingBalance': double.tryParse(_openingBalanceCtrl.text) ?? 0,
+        'openingBalanceBag': openingBag,
+        'openingBalanceBank': openingBank,
+        'openingBalance': openingBag + openingBank,
+        'billIncomeBag': record?['autoBillIncomeBag'] ?? 0,
+        'billIncomeBank': record?['autoBillIncomeBank'] ?? 0,
         'billIncome': record?['autoBillIncome'] ?? 0,
         'otherIncome1Label': _otherIncome1LabelCtrl.text.trim(),
         'otherIncome1Amount': double.tryParse(_otherIncome1Ctrl.text) ?? 0,
         'otherIncome2Label': _otherIncome2LabelCtrl.text.trim(),
         'otherIncome2Amount': double.tryParse(_otherIncome2Ctrl.text) ?? 0,
-        'expenses': double.tryParse(_expensesCtrl.text) ?? 0,
+        'expensesBag': expensesBag,
+        'expensesBank': expensesBank,
+        'expenses': expensesBag + expensesBank,
         'loansGivenCount': record?['loansGivenCount'] ?? 0,
+        'loansGivenPrincipalBag': record?['loansGivenPrincipalBag'] ?? 0,
+        'loansGivenPrincipalBank': record?['loansGivenPrincipalBank'] ?? 0,
         'loansGivenPrincipal': record?['loansGivenPrincipal'] ?? 0,
+        'loansGivenIncomeBag': record?['loansGivenIncomeBag'] ?? 0,
+        'loansGivenIncomeBank': record?['loansGivenIncomeBank'] ?? 0,
         'loansGivenIncome': record?['loansGivenIncome'] ?? 0,
+        'loansGivenNetDisbursedBag': record?['loansGivenNetDisbursedBag'] ?? 0,
+        'loansGivenNetDisbursedBank': record?['loansGivenNetDisbursedBank'] ?? 0,
         'loansGivenNetDisbursed': record?['loansGivenNetDisbursed'] ?? 0,
         'notes': _notesCtrl.text.trim(),
       });
@@ -177,7 +236,7 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final closing = _computeClosingBalance();
+    final balances = _computeBalances();
 
     return Scaffold(
       backgroundColor: AppTheme.surfaceLight,
@@ -221,7 +280,7 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
                                       fontSize: 18,
                                       fontWeight: FontWeight.w700,
                                     )),
-                                Text('Finance Cash In-Hand',
+                                Text('Cash in Bag & Bank Account',
                                     style: TextStyle(
                                         color: Colors.white70,
                                         fontSize: 12)),
@@ -313,7 +372,7 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
             ? const Center(child: CircularProgressIndicator())
             : _error != null
                 ? _buildError()
-                : _buildBody(closing),
+                : _buildBody(balances),
       ),
     );
   }
@@ -357,21 +416,18 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
     );
   }
 
-  Widget _buildBody(double closingBalance) {
+  Widget _buildBody(Map<String, double> balances) {
     final record = _record ?? {};
     final isSaved = record['isSaved'] as bool? ?? false;
     final prevClosing = (record['previousDayClosing'] as num? ?? 0).toDouble();
+    final prevClosingBag = (record['previousDayClosingBag'] as num? ?? 0).toDouble();
+    final prevClosingBank = (record['previousDayClosingBank'] as num? ?? 0).toDouble();
 
-    final autoBillIncome = (record['autoBillIncome'] as num? ?? 0).toDouble();
     final billPaymentsCount = (record['paymentsCount'] as num? ?? 0).toInt();
     final paymentsList =
         (record['paymentsList'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
 
     final loansGivenCount = (record['loansGivenCount'] as num? ?? 0).toInt();
-    final loansGivenPrincipal =
-        (record['loansGivenPrincipal'] as num? ?? 0).toDouble();
-    final loansGivenIncome =
-        (record['loansGivenIncome'] as num? ?? 0).toDouble();
     final loansGivenNetDisbursed =
         (record['loansGivenNetDisbursed'] as num? ?? 0).toDouble();
     final loansGivenList =
@@ -384,8 +440,8 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
         _buildSaveStatusBadge(isSaved, record['updatedAt']),
         const SizedBox(height: 12),
 
-        // ─── Closing Balance Card ─────────────────────────────────────────
-        _buildClosingBalanceCard(closingBalance),
+        // ─── Closing Balance Card (with Bag & Bank breakdown) ───────────────
+        _buildClosingBalanceCard(balances),
         const SizedBox(height: 16),
 
         // ─── Opening Balance ─────────────────────────────────────────────
@@ -397,16 +453,45 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Previous Day Closing: ${Formatters.currency(prevClosing)}',
+                'Previous Day Closing: Total ${Formatters.currency(prevClosing)} (Bag: ${Formatters.currency(prevClosingBag)} • Account: ${Formatters.currency(prevClosingBank)})',
                 style: const TextStyle(
-                    color: AppTheme.textMuted, fontSize: 12),
+                    color: AppTheme.textMuted, fontSize: 11.5),
               ),
-              const SizedBox(height: 8),
-              _buildTextField(
-                controller: _openingBalanceCtrl,
-                label: 'Opening Balance (₹)',
-                icon: Icons.account_balance_wallet,
-                onChanged: (_) => setState(() {}),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                      controller: _openingBalanceBagCtrl,
+                      label: 'Cash in Bag (₹)',
+                      icon: Icons.wallet_outlined,
+                      isNumeric: true,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _buildTextField(
+                      controller: _openingBalanceBankCtrl,
+                      label: 'Cash in Account (₹)',
+                      icon: Icons.account_balance_outlined,
+                      isNumeric: true,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  'Total Opening: ${Formatters.currency(balances['totalOpening'] ?? 0)}',
+                  style: const TextStyle(
+                    color: AppTheme.textDark,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
               ),
             ],
           ),
@@ -443,7 +528,7 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
                                 fontWeight: FontWeight.w700,
                                 fontSize: 13,
                                 color: AppTheme.textDark)),
-                        Text('Auto-computed from loan repayments',
+                        Text('Money from hand → Bag, Bank transfer → Account',
                             style: TextStyle(
                                 color: AppTheme.textMuted, fontSize: 11)),
                       ],
@@ -453,15 +538,17 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        Formatters.currency(autoBillIncome),
+                        Formatters.currency(balances['totalBillIncome'] ?? 0),
                         style: const TextStyle(
                             color: AppTheme.successColor,
                             fontWeight: FontWeight.w800,
                             fontSize: 16),
                       ),
-                      Text('$billPaymentsCount payments',
-                          style: const TextStyle(
-                              color: AppTheme.textMuted, fontSize: 11)),
+                      Text(
+                        'Bag: ${Formatters.currency(balances['billIncomeBag'] ?? 0)} • Account: ${Formatters.currency(balances['billIncomeBank'] ?? 0)}',
+                        style: const TextStyle(
+                            color: AppTheme.textMuted, fontSize: 10.5),
+                      ),
                     ],
                   ),
                 ],
@@ -469,18 +556,27 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
               if (paymentsList.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 const Divider(),
-                const Text('Payment Details',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                        color: AppTheme.textMuted)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Payment Details',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                            color: AppTheme.textMuted)),
+                    Text(
+                      '$billPaymentsCount payments',
+                      style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 6),
-                ...paymentsList.take(5).map((p) => _buildPaymentItem(p)),
-                if (paymentsList.length > 5)
+                ...paymentsList.take(6).map((p) => _buildPaymentItem(p)),
+                if (paymentsList.length > 6)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
-                      '+ ${paymentsList.length - 5} more payments',
+                      '+ ${paymentsList.length - 6} more payments',
                       style: const TextStyle(
                           color: AppTheme.primaryColor,
                           fontSize: 11,
@@ -493,7 +589,7 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
         ),
         const SizedBox(height: 10),
 
-        // Other Income 1
+        // Other Income 1 (Cash in Bag)
         _buildInputCard(
           child: Column(
             children: [
@@ -509,7 +605,7 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
                         color: Colors.orange, size: 16),
                   ),
                   const SizedBox(width: 10),
-                  const Text('Other Income 1',
+                  const Text('Other Income 1 (Added to Cash in Bag)',
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 13,
@@ -544,7 +640,7 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
         ),
         const SizedBox(height: 10),
 
-        // Other Income 2
+        // Other Income 2 (Cash in Account)
         _buildInputCard(
           child: Column(
             children: [
@@ -560,7 +656,7 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
                         color: Colors.teal, size: 16),
                   ),
                   const SizedBox(width: 10),
-                  const Text('Other Income 2',
+                  const Text('Other Income 2 (Added to Account)',
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 13,
@@ -625,7 +721,7 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
                                 fontWeight: FontWeight.w700,
                                 fontSize: 13,
                                 color: AppTheme.textDark)),
-                        Text('Auto-computed from new loans created',
+                        Text('Upfront interest is credited into the same source',
                             style: TextStyle(
                                 color: AppTheme.textMuted, fontSize: 11)),
                       ],
@@ -635,14 +731,14 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '- ${Formatters.currency(loansGivenPrincipal)}',
+                        '- ${Formatters.currency(balances['totalLoanPrincipal'] ?? 0)}',
                         style: const TextStyle(
                             color: AppTheme.errorColor,
                             fontWeight: FontWeight.w800,
                             fontSize: 15),
                       ),
                       Text(
-                        '+ ${Formatters.currency(loansGivenIncome)} income',
+                        '+ ${Formatters.currency(balances['totalLoanIncome'] ?? 0)} upfront',
                         style: const TextStyle(
                             color: AppTheme.successColor, fontSize: 11),
                       ),
@@ -652,20 +748,24 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
               ),
               if (loansGivenCount > 0) ...[
                 const SizedBox(height: 12),
-                Row(
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
                   children: [
                     _loanSummaryChip(
                         '$loansGivenCount loan${loansGivenCount != 1 ? 's' : ''}',
                         Colors.blue),
-                    const SizedBox(width: 8),
                     _loanSummaryChip(
-                        'Net given: ${Formatters.currency(loansGivenNetDisbursed)}',
-                        Colors.deepPurple),
+                        'Bag: -${Formatters.currency(balances['loanPrincipalBag'] ?? 0)} (+${Formatters.currency(balances['loanIncomeBag'] ?? 0)})',
+                        Colors.teal),
+                    _loanSummaryChip(
+                        'Account: -${Formatters.currency(balances['loanPrincipalBank'] ?? 0)} (+${Formatters.currency(balances['loanIncomeBank'] ?? 0)})',
+                        Colors.indigo),
                   ],
                 ),
                 const SizedBox(height: 10),
                 const Divider(),
-                const Text('Loan Details',
+                const Text('Loan Details & Disbursal Sources',
                     style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 12,
@@ -687,9 +787,10 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
         ),
         const SizedBox(height: 10),
 
-        // Day-to-day Expenses
+        // Day-to-day Expenses (Cash in Bag & Bank Account)
         _buildInputCard(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
@@ -708,28 +809,48 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
                           fontWeight: FontWeight.w700,
                           fontSize: 13,
                           color: AppTheme.textDark)),
+                  const Spacer(),
+                  Text(
+                    '- ${Formatters.currency(balances['totalExpenses'] ?? 0)}',
+                    style: const TextStyle(
+                      color: AppTheme.errorColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
-              _buildTextField(
-                controller: _expensesCtrl,
-                label: 'Total Expenses (₹)',
-                icon: Icons.currency_rupee,
-                isNumeric: true,
-                onChanged: (_) => setState(() {}),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                      controller: _expensesBagCtrl,
+                      label: 'From Cash in Bag (₹)',
+                      icon: Icons.wallet_outlined,
+                      isNumeric: true,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _buildTextField(
+                      controller: _expensesBankCtrl,
+                      label: 'From Account (₹)',
+                      icon: Icons.account_balance_outlined,
+                      isNumeric: true,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
         const SizedBox(height: 16),
 
-        // ─── Summary Breakdown ────────────────────────────────────────────
-        _buildSummaryCard(
-          autoBillIncome: autoBillIncome,
-          loansGivenPrincipal: loansGivenPrincipal,
-          loansGivenIncome: loansGivenIncome,
-          closing: closingBalance,
-        ),
+        // ─── Summary Breakdown (Bag & Account Table) ──────────────────────
+        _buildSummaryCard(balances),
         const SizedBox(height: 16),
 
         // Notes
@@ -803,24 +924,25 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
     );
   }
 
-  Widget _buildClosingBalanceCard(double closingBalance) {
+  Widget _buildClosingBalanceCard(Map<String, double> balances) {
+    final closingTotal = balances['totalClosing'] ?? 0;
+    final closingBag = balances['closingBag'] ?? 0;
+    final closingBank = balances['closingBank'] ?? 0;
+
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: closingBalance >= 0
-              ? [const Color(0xFF2E7D32), const Color(0xFF388E3C)]
-              : [const Color(0xFFC62828), const Color(0xFFD32F2F)],
+          colors: closingTotal >= 0
+              ? [const Color(0xFF1B5E20), const Color(0xFF2E7D32)]
+              : [const Color(0xFFB71C1C), const Color(0xFFC62828)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: (closingBalance >= 0
-                    ? AppTheme.successColor
-                    : AppTheme.errorColor)
-                .withValues(alpha: 0.35),
+            color: (closingTotal >= 0 ? AppTheme.successColor : AppTheme.errorColor).withValues(alpha: 0.35),
             blurRadius: 18,
             offset: const Offset(0, 6),
           ),
@@ -829,46 +951,134 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.account_balance_rounded,
-                  color: Colors.white70, size: 16),
-              SizedBox(width: 6),
-              Text('Total Cash In-Hand',
-                  style: TextStyle(color: Colors.white70, fontSize: 12)),
+              const Icon(Icons.account_balance_rounded, color: Colors.white70, size: 16),
+              const SizedBox(width: 6),
+              const Text('Total Cash In-Hand', style: TextStyle(color: Colors.white70, fontSize: 12)),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  _formatDateDisplay(_selectedDate),
+                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
-            Formatters.currency(closingBalance),
+            Formatters.currency(closingTotal),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 28,
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Finance closing balance for ${_formatDateDisplay(_selectedDate)}',
-            style: const TextStyle(color: Colors.white70, fontSize: 11),
+          const SizedBox(height: 14),
+          const Divider(color: Colors.white24, height: 1),
+          const SizedBox(height: 12),
+          // Dual classification pills
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.wallet_outlined, color: Colors.white70, size: 14),
+                          SizedBox(width: 4),
+                          Text('Cash in Bag', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        Formatters.currency(closingBag),
+                        style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800),
+                      ),
+                      const Text('Hand Cash', style: TextStyle(color: Colors.white54, fontSize: 9.5)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.account_balance_outlined, color: Colors.white70, size: 14),
+                          SizedBox(width: 4),
+                          Text('Cash in Account', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        Formatters.currency(closingBank),
+                        style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800),
+                      ),
+                      const Text('Bank / Online', style: TextStyle(color: Colors.white54, fontSize: 9.5)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryCard({
-    required double autoBillIncome,
-    required double loansGivenPrincipal,
-    required double loansGivenIncome,
-    required double closing,
-  }) {
-    final opening = double.tryParse(_openingBalanceCtrl.text) ?? 0;
-    final otherIncome1 = double.tryParse(_otherIncome1Ctrl.text) ?? 0;
-    final otherIncome2 = double.tryParse(_otherIncome2Ctrl.text) ?? 0;
-    final expenses = double.tryParse(_expensesCtrl.text) ?? 0;
-    final totalIncome = autoBillIncome + loansGivenIncome + otherIncome1 + otherIncome2;
-    final totalOutflow = loansGivenPrincipal + expenses;
+  Widget _buildSummaryCard(Map<String, double> b) {
+    final openingBag = b['openingBag'] ?? 0;
+    final openingBank = b['openingBank'] ?? 0;
+    final totalOpening = b['totalOpening'] ?? 0;
+
+    final billIncomeBag = b['billIncomeBag'] ?? 0;
+    final billIncomeBank = b['billIncomeBank'] ?? 0;
+    final totalBillIncome = b['totalBillIncome'] ?? 0;
+
+    final loanIncomeBag = b['loanIncomeBag'] ?? 0;
+    final loanIncomeBank = b['loanIncomeBank'] ?? 0;
+    final totalLoanIncome = b['totalLoanIncome'] ?? 0;
+
+    final otherIncome1 = b['otherIncome1'] ?? 0;
+    final otherIncome2 = b['otherIncome2'] ?? 0;
+
+    final loanPrincipalBag = b['loanPrincipalBag'] ?? 0;
+    final loanPrincipalBank = b['loanPrincipalBank'] ?? 0;
+    final totalLoanPrincipal = b['totalLoanPrincipal'] ?? 0;
+
+    final expensesBag = b['expensesBag'] ?? 0;
+    final expensesBank = b['expensesBank'] ?? 0;
+    final totalExpenses = b['totalExpenses'] ?? 0;
+
+    final totalIncome = totalBillIncome + totalLoanIncome + otherIncome1 + otherIncome2;
+    final totalOutflow = totalLoanPrincipal + totalExpenses;
+
+    final closingBag = b['closingBag'] ?? 0;
+    final closingBank = b['closingBank'] ?? 0;
+    final totalClosing = b['totalClosing'] ?? 0;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -879,34 +1089,179 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Cash Flow Summary',
-              style: TextStyle(
+          Row(
+            children: [
+              const Text(
+                'Cash Flow Summary',
+                style: TextStyle(
                   color: Colors.white70,
                   fontSize: 11,
                   letterSpacing: 1,
-                  fontWeight: FontWeight.w600)),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.white12,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text('Bag & Account Classified', style: TextStyle(color: Colors.white60, fontSize: 9.5)),
+              ),
+            ],
+          ),
           const SizedBox(height: 12),
-          _summaryRow('Opening Balance', opening, Colors.white, isTotal: false),
-          _summaryRow('+ Bill Income', autoBillIncome, AppTheme.successColor, isTotal: false),
-          _summaryRow('+ Loan Upfront Income', loansGivenIncome, AppTheme.successColor, isTotal: false),
-          if (otherIncome1 > 0)
-            _summaryRow('+ Other Income 1', otherIncome1, AppTheme.successColor, isTotal: false),
-          if (otherIncome2 > 0)
-            _summaryRow('+ Other Income 2', otherIncome2, AppTheme.successColor, isTotal: false),
-          _summaryRow('− Loans Given (Principal)', loansGivenPrincipal,
-              AppTheme.errorColor, isTotal: false, isNegative: true),
-          _summaryRow('− Day Expenses', expenses, AppTheme.errorColor,
-              isTotal: false, isNegative: true),
+
+          // Opening
+          _summaryRowWithBreakdown(
+            label: 'Opening Balance',
+            total: totalOpening,
+            bag: openingBag,
+            bank: openingBank,
+            color: Colors.white,
+          ),
+
+          // Bill Income
+          _summaryRowWithBreakdown(
+            label: '+ Bill Income',
+            total: totalBillIncome,
+            bag: billIncomeBag,
+            bank: billIncomeBank,
+            color: AppTheme.successColor,
+          ),
+
+          // Loan Upfront Income
+          _summaryRowWithBreakdown(
+            label: '+ Loan Upfront Income',
+            total: totalLoanIncome,
+            bag: loanIncomeBag,
+            bank: loanIncomeBank,
+            color: AppTheme.successColor,
+          ),
+
+          if (otherIncome1 > 0 || otherIncome2 > 0)
+            _summaryRowWithBreakdown(
+              label: '+ Other Incomes',
+              total: otherIncome1 + otherIncome2,
+              bag: otherIncome1,
+              bank: otherIncome2,
+              color: AppTheme.successColor,
+            ),
+
+          // Loans Given Principal
+          _summaryRowWithBreakdown(
+            label: '− Loans Given (Principal)',
+            total: totalLoanPrincipal,
+            bag: loanPrincipalBag,
+            bank: loanPrincipalBank,
+            color: AppTheme.errorColor,
+            isNegative: true,
+          ),
+
+          // Expenses
+          _summaryRowWithBreakdown(
+            label: '− Day Expenses',
+            total: totalExpenses,
+            bag: expensesBag,
+            bank: expensesBank,
+            color: AppTheme.errorColor,
+            isNegative: true,
+          ),
+
           const Divider(color: Colors.white24, height: 16),
           _summaryRow('Total Day Inflows', totalIncome, AppTheme.successColor, isTotal: false),
           _summaryRow('Total Day Outflows', totalOutflow, AppTheme.errorColor, isTotal: false, isNegative: true),
           const Divider(color: Colors.white24, height: 16),
+
+          // Final Total
           _summaryRow(
             '= Total In-Hand',
-            closing,
-            closing >= 0 ? AppTheme.accentLime : AppTheme.errorColor,
+            totalClosing,
+            totalClosing >= 0 ? AppTheme.accentLime : AppTheme.errorColor,
             isTotal: true,
           ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      const Icon(Icons.wallet, size: 13, color: AppTheme.accentLime),
+                      const SizedBox(width: 4),
+                      Text('Bag: ${Formatters.currency(closingBag)}',
+                          style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      const Icon(Icons.account_balance, size: 13, color: Colors.lightBlueAccent),
+                      const SizedBox(width: 4),
+                      Text('Account: ${Formatters.currency(closingBank)}',
+                          style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _summaryRowWithBreakdown({
+    required String label,
+    required double total,
+    required double bag,
+    required double bank,
+    required Color color,
+    bool isNegative = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
+              ),
+              Text(
+                isNegative ? '- ${Formatters.currency(total)}' : Formatters.currency(total),
+                style: TextStyle(color: color, fontSize: 12.5, fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+          if (bag > 0 || bank > 0)
+            Padding(
+              padding: const EdgeInsets.only(left: 8, top: 2),
+              child: Row(
+                children: [
+                  Text(
+                    '👜 Bag: ${isNegative ? "-" : ""}${Formatters.currency(bag)}',
+                    style: const TextStyle(color: Colors.white54, fontSize: 10),
+                  ),
+                  const SizedBox(width: 14),
+                  Text(
+                    '🏦 Account: ${isNegative ? "-" : ""}${Formatters.currency(bank)}',
+                    style: const TextStyle(color: Colors.white54, fontSize: 10),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
@@ -941,25 +1296,33 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
   }
 
   Widget _buildPaymentItem(Map<String, dynamic> p) {
+    final channel = p['channel'] as String? ?? (p['method'] == 'BANK_TRANSFER' || p['method'] == 'UPI' ? 'ACCOUNT' : 'BAG');
+    final isBank = channel == 'ACCOUNT';
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
         children: [
-          const Icon(Icons.check_circle, color: AppTheme.successColor, size: 12),
+          Icon(
+            isBank ? Icons.account_balance : Icons.wallet,
+            color: isBank ? Colors.lightBlue : AppTheme.successColor,
+            size: 13,
+          ),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              '${p['customerName']} · ${p['loanNumber']} · Due #${p['dueNumber']}',
+              '${p['customerName']} · ${p['loanNumber']} · Due #${p['dueNumber']} (${isBank ? "Account" : "Bag"})',
               style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           Text(
             Formatters.currency(p['amount']),
-            style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.successColor),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: isBank ? Colors.lightBlue.shade700 : AppTheme.successColor,
+            ),
           ),
         ],
       ),
@@ -967,6 +1330,8 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
   }
 
   Widget _buildLoanGivenItem(Map<String, dynamic> l) {
+    final isBank = (l['disbursementChannel'] == 'ACCOUNT') || (l['disbursementMethod'] != null && l['disbursementMethod'] == 'BANK');
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Container(
@@ -995,31 +1360,34 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                    color: isBank ? Colors.indigo.withValues(alpha: 0.12) : AppTheme.primaryColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    l['type'] as String? ?? '',
-                    style: const TextStyle(
+                    isBank ? '🏦 Bank Disbursal' : '👜 Cash in Bag',
+                    style: TextStyle(
                         fontSize: 10,
-                        color: AppTheme.primaryColor,
+                        color: isBank ? Colors.indigo : AppTheme.primaryColor,
                         fontWeight: FontWeight.w700),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 6),
-            Row(
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
               children: [
                 _miniChip('Loan: ${l['loanNumber']}', Colors.blueGrey),
-                const SizedBox(width: 6),
                 _miniChip(
                     'Principal: ${Formatters.currency(l['principal'])}',
                     AppTheme.errorColor),
-                const SizedBox(width: 6),
                 _miniChip(
                     'Upfront Income: ${Formatters.currency(l['upfrontIncome'])}',
                     AppTheme.successColor),
+                _miniChip(
+                    'Net: ${Formatters.currency(l['disbursedAmount'])}',
+                    isBank ? Colors.indigo : Colors.teal),
               ],
             ),
           ],

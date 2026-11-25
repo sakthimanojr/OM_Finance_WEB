@@ -18,6 +18,7 @@ class Loan {
     this.installmentAmount,
     this.customerName,
     this.customerPhone,
+    this.disbursementMethod = 'CASH',
     this.dues = const [],
   });
 
@@ -37,6 +38,7 @@ class Loan {
   final num? installmentAmount;
   final String? customerName;
   final String? customerPhone;
+  final String disbursementMethod;
   final List<Due> dues;
 
   /// Prisma returns Decimal columns as strings; this helper handles both.
@@ -66,6 +68,7 @@ class Loan {
       installmentAmount: _toNumNullable(json['installmentAmount']),
       customerName: customer?['name']?.toString(),
       customerPhone: customer?['phone']?.toString(),
+      disbursementMethod: json['disbursementMethod']?.toString() ?? 'CASH',
       dues: (json['dues'] as List<dynamic>? ?? [])
           .map((d) => Due.fromJson(d as Map<String, dynamic>))
           .toList(),

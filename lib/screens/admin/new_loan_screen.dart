@@ -45,6 +45,7 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
   final _termCountController = TextEditingController();
 
   String _loanType = AppConstants.loanWeekly;
+  String _disbursementSource = 'CASH'; // 'CASH' (Cash in Bag) or 'BANK' (Cash in Account)
   DateTime _startDate = DateTime.now();
   bool _isSubmitting = false;
   String? _error;
@@ -181,6 +182,7 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
         agreementFee: _fee,
         termCount: terms,
         startDate: _startDate,
+        disbursementMethod: _disbursementSource,
       );
 
       ref.invalidate(customerListProvider);
@@ -690,6 +692,151 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                     trailing: const Icon(Icons.calendar_today_outlined, size: 20),
                     onTap: _pickDate,
                   ),
+                  const Divider(height: 24),
+
+                  // Disbursement Source (Giving Money From)
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(Icons.account_balance_wallet_outlined, size: 16, color: AppTheme.primaryColor),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Giving Money From',
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppTheme.textDark),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Choose where money is disbursed from. Upfront interest will also be collected into this account.',
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => setState(() => _disbursementSource = 'CASH'),
+                          borderRadius: BorderRadius.circular(12),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: _disbursementSource == 'CASH'
+                                  ? AppTheme.primaryColor.withValues(alpha: 0.08)
+                                  : Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: _disbursementSource == 'CASH'
+                                    ? AppTheme.primaryColor
+                                    : Colors.grey.shade300,
+                                width: _disbursementSource == 'CASH' ? 2 : 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.wallet_outlined,
+                                  color: _disbursementSource == 'CASH'
+                                      ? AppTheme.primaryColor
+                                      : Colors.grey.shade600,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Cash in Bag',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 12.5,
+                                          color: _disbursementSource == 'CASH'
+                                              ? AppTheme.primaryColor
+                                              : AppTheme.textDark,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Hand cash',
+                                        style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (_disbursementSource == 'CASH')
+                                  const Icon(Icons.check_circle, color: AppTheme.primaryColor, size: 16),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => setState(() => _disbursementSource = 'BANK'),
+                          borderRadius: BorderRadius.circular(12),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: _disbursementSource == 'BANK'
+                                  ? Colors.indigo.withValues(alpha: 0.08)
+                                  : Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: _disbursementSource == 'BANK'
+                                    ? Colors.indigo
+                                    : Colors.grey.shade300,
+                                width: _disbursementSource == 'BANK' ? 2 : 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.account_balance_outlined,
+                                  color: _disbursementSource == 'BANK'
+                                      ? Colors.indigo
+                                      : Colors.grey.shade600,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Cash in Account',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 12.5,
+                                          color: _disbursementSource == 'BANK'
+                                              ? Colors.indigo
+                                              : AppTheme.textDark,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Bank transfer / UPI',
+                                        style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (_disbursementSource == 'BANK')
+                                  const Icon(Icons.check_circle, color: Colors.indigo, size: 16),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -764,6 +911,29 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                             'Total Repayable (Principal)',
                             '${Formatters.currency(preview['totalRepayable'] ?? 0)} ($terms x ${Formatters.currency(preview['installment'] ?? 0)})',
                           ),
+                        const Divider(height: 18, thickness: 1),
+                        Row(
+                          children: [
+                            Icon(
+                              _disbursementSource == 'BANK' ? Icons.account_balance : Icons.wallet,
+                              size: 15,
+                              color: AppTheme.textDark,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                _disbursementSource == 'BANK'
+                                    ? 'Giving from: Cash in Account (Bank). Disbursed net amount is deducted from Bank, and upfront interest is credited back to Bank.'
+                                    : 'Giving from: Cash in Bag (Hand). Disbursed net amount is deducted from Bag, and upfront interest is credited back to Bag.',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.textDark,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   );
