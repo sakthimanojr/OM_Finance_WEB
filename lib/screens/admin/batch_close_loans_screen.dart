@@ -256,7 +256,6 @@ class _BatchCloseLoansScreenState extends ConsumerState<BatchCloseLoansScreen> {
 
           if (activeLoans.isEmpty) {
             return const EmptyStateView(
-              title: 'No Active Loans',
               message: 'All loans are already closed or completed.',
               icon: Icons.check_circle_outline,
             );
