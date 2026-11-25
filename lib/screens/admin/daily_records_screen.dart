@@ -79,8 +79,11 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
   }
 
   void _populateControllers(Map<String, dynamic> data) {
-    final bagOpening = (data['openingBalanceBag'] as num? ?? data['openingBalance'] as num? ?? 0).toDouble();
-    final bankOpening = (data['openingBalanceBank'] as num? ?? 0).toDouble();
+    double bagOpening = (data['openingBalanceBag'] as num? ?? 0).toDouble();
+    double bankOpening = (data['openingBalanceBank'] as num? ?? 0).toDouble();
+    if (bagOpening == 0 && bankOpening == 0 && (data['openingBalance'] as num? ?? 0) > 0) {
+      bagOpening = (data['openingBalance'] as num).toDouble();
+    }
     _openingBalanceBagCtrl.text = bagOpening.toStringAsFixed(2);
     _openingBalanceBankCtrl.text = bankOpening.toStringAsFixed(2);
 
@@ -1245,23 +1248,22 @@ class _DailyRecordsScreenState extends State<DailyRecordsScreen> {
               ),
             ],
           ),
-          if (bag > 0 || bank > 0)
-            Padding(
-              padding: const EdgeInsets.only(left: 8, top: 2),
-              child: Row(
-                children: [
-                  Text(
-                    '👜 Bag: ${isNegative ? "-" : ""}${Formatters.currency(bag)}',
-                    style: const TextStyle(color: Colors.white54, fontSize: 10),
-                  ),
-                  const SizedBox(width: 14),
-                  Text(
-                    '🏦 Account: ${isNegative ? "-" : ""}${Formatters.currency(bank)}',
-                    style: const TextStyle(color: Colors.white54, fontSize: 10),
-                  ),
-                ],
-              ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8, top: 2),
+            child: Row(
+              children: [
+                Text(
+                  '👜 Bag: ${isNegative && bag > 0 ? "-" : ""}${Formatters.currency(bag)}',
+                  style: const TextStyle(color: Colors.white60, fontSize: 10.5, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(width: 14),
+                Text(
+                  '🏦 Account: ${isNegative && bank > 0 ? "-" : ""}${Formatters.currency(bank)}',
+                  style: const TextStyle(color: Colors.white60, fontSize: 10.5, fontWeight: FontWeight.w500),
+                ),
+              ],
             ),
+          ),
         ],
       ),
     );

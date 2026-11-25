@@ -66,12 +66,15 @@ class Loan {
           ? json['termCount'] as int
           : (int.tryParse(json['termCount']?.toString() ?? '')),
       installmentAmount: _toNumNullable(json['installmentAmount']),
-      customerName: customer?['name']?.toString(),
-      customerPhone: customer?['phone']?.toString(),
+      customerName: customer?['name']?.toString() ?? json['customerName']?.toString(),
+      customerPhone: customer?['phone']?.toString() ?? json['customerPhone']?.toString(),
       disbursementMethod: json['disbursementMethod']?.toString() ?? 'CASH',
-      dues: (json['dues'] as List<dynamic>? ?? [])
-          .map((d) => Due.fromJson(d as Map<String, dynamic>))
-          .toList(),
+      dues: (json['dues'] is List)
+          ? (json['dues'] as List)
+              .map((d) => d is Map ? Due.fromJson(Map<String, dynamic>.from(d)) : null)
+              .whereType<Due>()
+              .toList()
+          : const [],
     );
   }
 

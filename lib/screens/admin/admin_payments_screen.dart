@@ -143,7 +143,7 @@ class _AdminPaymentsScreenState extends ConsumerState<AdminPaymentsScreen> {
                 itemBuilder: (context, index) {
                   final payment = payments[index];
                   return GestureDetector(
-                    onTap: () => context.push('/admin/customers/${payment.customerId}'),
+                    onTap: () => context.push('/admin/loans/${payment.loanId}'),
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 10),
                       decoration: BoxDecoration(

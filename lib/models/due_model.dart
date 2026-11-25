@@ -30,8 +30,8 @@ class Due {
   static num _toNum(dynamic v) => v is num ? v : (v == null ? 0 : (num.tryParse(v.toString()) ?? 0));
 
   factory Due.fromJson(Map<String, dynamic> json) {
-    final loan = json['loan'] as Map<String, dynamic>?;
-    final customer = loan?['customer'] as Map<String, dynamic>?;
+    final loan = json['loan'] is Map ? Map<String, dynamic>.from(json['loan'] as Map) : null;
+    final customer = loan?['customer'] is Map ? Map<String, dynamic>.from(loan!['customer'] as Map) : null;
     return Due(
       id: json['id']?.toString() ?? '',
       loanId: json['loanId']?.toString() ?? '',
@@ -46,9 +46,9 @@ class Due {
       paidDate: json['paidDate'] != null ? DateTime.tryParse(json['paidDate'].toString()) : null,
       paidAmount: json['paidAmount'] != null ? _toNum(json['paidAmount']) : null,
       paymentMethod: json['paymentMethod']?.toString(),
-      customerName: customer?['name']?.toString(),
-      customerPhone: customer?['phone']?.toString(),
-      loanType: loan?['type']?.toString(),
+      customerName: customer?['name']?.toString() ?? json['customerName']?.toString(),
+      customerPhone: customer?['phone']?.toString() ?? json['customerPhone']?.toString(),
+      loanType: loan?['type']?.toString() ?? json['loanType']?.toString(),
     );
   }
 

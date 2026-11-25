@@ -19,6 +19,8 @@ class Customer {
     this.photoUrl,
     this.status = 'ACTIVE',
     this.createdAt,
+    this.loanId,
+    this.activeLoanId,
     this.loanNumber,
     this.activeLoanNumber,
     this.loanStatus,
@@ -43,6 +45,8 @@ class Customer {
   final String? photoUrl;
   final String status;
   final DateTime? createdAt;
+  final String? loanId;
+  final String? activeLoanId;
   final String? loanNumber;
   final String? activeLoanNumber;
   final String? loanStatus;
@@ -95,6 +99,8 @@ class Customer {
         photoUrl: json['photoUrl'] as String?,
         status: json['status'] as String? ?? 'ACTIVE',
         createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null,
+        loanId: json['loanId']?.toString(),
+        activeLoanId: json['activeLoanId']?.toString(),
         loanNumber: json['loanNumber'] as String?,
         activeLoanNumber: json['activeLoanNumber'] as String?,
         loanStatus: json['loanStatus'] as String?,

@@ -37,10 +37,10 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
         foregroundColor: Colors.white,
         title: Text(
           ref.watch(customerStatusFilterProvider) == 'ACTIVE'
-              ? 'Active Customers'
+              ? 'Active Loans'
               : (ref.watch(customerStatusFilterProvider) == 'CLOSED'
-                  ? 'Closed Loan Customers'
-                  : 'All Customers'),
+                  ? 'Closed Loans'
+                  : 'All Loans'),
           style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
         ),
       ),
@@ -71,17 +71,17 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                 scrollDirection: Axis.horizontal,
                 children: [
                   _FilterTab(
-                    label: 'All Customers',
+                    label: 'All Loans',
                     isSelected: ref.watch(customerStatusFilterProvider) == null,
                     onTap: () => ref.read(customerStatusFilterProvider.notifier).state = null,
                   ),
                   _FilterTab(
-                    label: 'Active',
+                    label: 'Active Loans',
                     isSelected: ref.watch(customerStatusFilterProvider) == 'ACTIVE',
                     onTap: () => ref.read(customerStatusFilterProvider.notifier).state = 'ACTIVE',
                   ),
                   _FilterTab(
-                    label: 'Closed Loans / Profiles',
+                    label: 'Closed Loans',
                     isSelected: ref.watch(customerStatusFilterProvider) == 'CLOSED',
                     onTap: () => ref.read(customerStatusFilterProvider.notifier).state = 'CLOSED',
                   ),
@@ -174,8 +174,20 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(16),
-                            onTap: () => context
-                                .push('/admin/customers/${customer.id}'),
+                            onTap: () {
+                              final targetLoanId = customer.activeLoanId ??
+                                  customer.loanId ??
+                                  (customer.loans != null &&
+                                          customer.loans!.isNotEmpty &&
+                                          customer.loans!.first is Map
+                                      ? customer.loans!.first['id']?.toString()
+                                      : null);
+                              if (targetLoanId != null && targetLoanId.isNotEmpty) {
+                                context.push('/admin/loans/$targetLoanId');
+                              } else {
+                                context.push('/admin/loans/new?customerId=${customer.id}');
+                              }
+                            },
                             child: Padding(
                               padding: const EdgeInsets.all(14),
                               child: Column(

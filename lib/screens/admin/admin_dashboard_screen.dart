@@ -161,8 +161,8 @@ class AdminDashboardScreen extends ConsumerWidget {
                             childAspectRatio: 1.35,
                             children: [
                               SummaryCard(
-                                icon: Icons.groups_rounded,
-                                label: 'Active Customers',
+                                icon: Icons.assignment_outlined,
+                                label: 'All Loans',
                                 value: '${summary.totalCustomers}',
                                 color: AppTheme.primaryColor,
                                 onTap: () => context
@@ -478,8 +478,8 @@ class _QuickActionsGrid extends StatelessWidget {
       childAspectRatio: 1.0,
       children: [
         _QuickActionCard(
-          icon: Icons.people_alt_outlined,
-          label: 'Customers',
+          icon: Icons.assignment_outlined,
+          label: 'Loans',
           color: AppTheme.primaryColor,
           onTap: () => context.push('/admin/customers'),
         ),

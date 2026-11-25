@@ -203,13 +203,20 @@ class _DuesByCustomerTab extends ConsumerWidget {
               final pendingCount = group['pendingCount'] as int;
               final totalAmount = group['totalAmount'] as num;
               final customerId = group['customerId'] as String;
+              final loanId = group['loanId'] as String?;
 
               return _CustomerGroupItem(
                 name: customerName,
                 phone: customerPhone,
                 pendingCount: pendingCount,
                 totalAmount: totalAmount,
-                onTap: () => context.push('/admin/customers/$customerId'),
+                onTap: () {
+                  if (loanId != null && loanId.isNotEmpty) {
+                    context.push('/admin/loans/$loanId');
+                  } else {
+                    context.push('/admin/loans?customerId=$customerId');
+                  }
+                },
               );
             },
           ),

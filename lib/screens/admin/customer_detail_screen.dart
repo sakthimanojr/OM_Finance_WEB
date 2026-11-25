@@ -207,6 +207,51 @@ class CustomerDetailScreen extends ConsumerWidget {
                   ],
                 ),
               ),
+              if (customer.activeLoanId != null || customer.loanId != null) ...[
+                const SizedBox(height: 12),
+                InkWell(
+                  onTap: () => context.push('/admin/loans/${customer.activeLoanId ?? customer.loanId}'),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.receipt_long_rounded, color: Colors.white, size: 22),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                customer.activeLoanNumber != null
+                                    ? 'Active Loan #${customer.activeLoanNumber}'
+                                    : 'View Current Loan Details',
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                              const Text(
+                                'Tap to open dues schedule, collections & loan details',
+                                style: TextStyle(color: Colors.white70, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 16),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
 
               // Personal info card

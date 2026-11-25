@@ -62,11 +62,16 @@ class _ClosedLoansScreenState extends ConsumerState<ClosedLoansScreen> {
                       ),
                     ],
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => context.push('/admin/loans/${loan.loanId}'),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                         Row(
                           children: [
                             Container(
@@ -120,7 +125,9 @@ class _ClosedLoansScreenState extends ConsumerState<ClosedLoansScreen> {
                       ],
                     ),
                   ),
-                );
+                ),
+              ),
+            );
               },
             ),
           );
