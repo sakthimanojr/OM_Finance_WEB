@@ -285,7 +285,7 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                                     _phoneController.text = match.phone;
                                     _fatherNameController.text = match.fatherName ?? '';
                                     _addressController.text = match.address ?? '';
-                                    _aadhaarController.text = match.aadhaar ?? '';
+                                    _aadhaarController.text = match.aadhaarLast4 ?? '';
                                     _panController.text = match.pan ?? '';
                                     _guarantorNameController.text = match.guarantorName ?? '';
                                     _guarantorPhoneController.text = match.guarantorPhone ?? '';

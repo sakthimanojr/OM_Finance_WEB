@@ -36,6 +36,7 @@ class Customer {
   final String? fatherName;
   final String? address;
   final String? aadhaarLast4;
+  String? get aadhaar => aadhaarLast4;
   final String? pan;
   final String? occupation;
   final num? monthlyIncome;
