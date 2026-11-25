@@ -597,77 +597,111 @@ class _BatchCloseLoansScreenState extends ConsumerState<BatchCloseLoansScreen> {
       ),
 
       // Sticky Bottom Bar when loans are selected
-      bottomSheet: _selectedLoanIds.isEmpty
+      bottomNavigationBar: _selectedLoanIds.isEmpty
           ? null
           : Container(
-              padding: const EdgeInsets.all(16),
+              width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.10),
+                    color: Colors.black.withValues(alpha: 0.12),
                     blurRadius: 16,
                     offset: const Offset(0, -4),
                   ),
                 ],
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                border: Border(
+                  top: BorderSide(color: Colors.grey.shade200, width: 1),
+                ),
               ),
               child: SafeArea(
-                child: loansAsync.maybeWhen(
-                  data: (allLoans) {
-                    final selectedLoans = allLoans.where((l) => _selectedLoanIds.contains(l.id)).toList();
-                    final selectedTotal = selectedLoans.fold<num>(
-                      0,
-                      (sum, l) => sum + _calculatePendingAmount(l),
-                    );
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  child: loansAsync.maybeWhen(
+                    data: (allLoans) {
+                      final selectedLoans = allLoans.where((l) => _selectedLoanIds.contains(l.id)).toList();
+                      final selectedTotal = selectedLoans.fold<num>(
+                        0,
+                        (sum, l) => sum + _calculatePendingAmount(l),
+                      );
 
-                    return Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${selectedLoans.length} Loan${selectedLoans.length == 1 ? '' : 's'} Selected',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                              ),
-                              Text(
-                                'Total: ${Formatters.currency(selectedTotal)}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 16,
-                                  color: AppTheme.primaryColor,
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        '${selectedLoans.length} Selected',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                          color: AppTheme.primaryColor,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    const Text(
+                                      'Total: ',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    Text(
+                                      Formatters.currency(selectedTotal),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 17,
+                                        color: AppTheme.primaryColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        ElevatedButton.icon(
-                          onPressed: _isSubmitting ? null : () => _closeLoans(selectedLoans),
-                          icon: _isSubmitting
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                )
-                              : const Icon(Icons.account_balance, size: 18),
-                          label: Text(
-                            _isSubmitting ? 'Closing...' : 'Close Selected (${selectedLoans.length})',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          const SizedBox(width: 16),
+                          ElevatedButton.icon(
+                            onPressed: _isSubmitting ? null : () => _closeLoans(selectedLoans),
+                            icon: _isSubmitting
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  )
+                                : const Icon(Icons.check_circle_outline, size: 20),
+                            label: Text(
+                              _isSubmitting ? 'Closing...' : 'Close Selected (${selectedLoans.length})',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primaryColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              elevation: 2,
+                            ),
                           ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryColor,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                  orElse: () => const SizedBox.shrink(),
+                        ],
+                      );
+                    },
+                    orElse: () => const SizedBox.shrink(),
+                  ),
                 ),
               ),
             ),
