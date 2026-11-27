@@ -109,6 +109,7 @@ class LoanService {
     String? type,
     String? disbursementMethod,
     String? status,
+    int? paidDuesCount,
   }) async {
     try {
       final response = await _dio.patch(
@@ -125,6 +126,7 @@ class LoanService {
           if (type != null) 'type': type,
           if (disbursementMethod != null) 'disbursementMethod': disbursementMethod,
           if (status != null) 'status': status,
+          if (paidDuesCount != null) 'paidDuesCount': paidDuesCount,
         },
       );
       return Loan.fromJson(response.data['data'] as Map<String, dynamic>);

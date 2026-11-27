@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/state_views.dart';
 import '../../providers/admin_management_provider.dart';
+import '../../providers/auth_provider.dart';
 
 class AdminManagementScreen extends ConsumerStatefulWidget {
   const AdminManagementScreen({super.key});
@@ -184,16 +185,164 @@ class _AdminsTab extends ConsumerWidget {
     );
   }
 
+  Future<void> _showResetPasswordDialog(BuildContext context, WidgetRef ref, String adminId, String adminPhone) async {
+    final newPasswordController = TextEditingController();
+    final confirmController = TextEditingController();
+    bool obscure1 = true;
+    bool obscure2 = true;
+    bool isSubmitting = false;
+    String? error;
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Row(
+            children: [
+              const Icon(Icons.lock_reset, color: AppTheme.primaryColor),
+              const SizedBox(width: 8),
+              Expanded(child: Text('Reset Password\n$adminPhone', style: const TextStyle(fontSize: 15))),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: newPasswordController,
+                obscureText: obscure1,
+                decoration: InputDecoration(
+                  labelText: 'New Password *',
+                  suffixIcon: IconButton(
+                    icon: Icon(obscure1 ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () => setDialogState(() => obscure1 = !obscure1),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: confirmController,
+                obscureText: obscure2,
+                decoration: InputDecoration(
+                  labelText: 'Confirm Password *',
+                  suffixIcon: IconButton(
+                    icon: Icon(obscure2 ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () => setDialogState(() => obscure2 = !obscure2),
+                  ),
+                ),
+              ),
+              if (error != null) ...[
+                const SizedBox(height: 10),
+                Text(error!, style: const TextStyle(color: AppTheme.errorColor, fontSize: 12)),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor, foregroundColor: Colors.white),
+              onPressed: isSubmitting
+                  ? null
+                  : () async {
+                      final pw = newPasswordController.text;
+                      final confirm = confirmController.text;
+                      if (pw.length < 6) {
+                        setDialogState(() => error = 'Password must be at least 6 characters');
+                        return;
+                      }
+                      if (pw != confirm) {
+                        setDialogState(() => error = 'Passwords do not match');
+                        return;
+                      }
+                      setDialogState(() { isSubmitting = true; error = null; });
+                      try {
+                        await ref.read(adminManagementServiceProvider).resetAdminPassword(adminId, pw);
+                        if (context.mounted) {
+                          Navigator.pop(dialogContext);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Password reset for $adminPhone'), backgroundColor: AppTheme.successColor),
+                          );
+                        }
+                      } catch (e) {
+                        setDialogState(() { error = e.toString(); isSubmitting = false; });
+                      }
+                    },
+              child: isSubmitting
+                  ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('Reset Password'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmToggleRole(BuildContext context, WidgetRef ref, String adminId, String adminPhone, String currentRole) async {
+    final willBeSuper = currentRole != 'SUPER_ADMIN';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(willBeSuper ? Icons.shield : Icons.person_outline, color: willBeSuper ? AppTheme.primaryColor : Colors.orange),
+            const SizedBox(width: 8),
+            Text(willBeSuper ? 'Promote to Super Admin?' : 'Demote from Super Admin?'),
+          ],
+        ),
+        content: Text(
+          willBeSuper
+              ? '$adminPhone will get full Super Admin access including managing other admins.\n\nThis action can be reversed.'
+              : '$adminPhone will become a View Admin and lose Super Admin privileges.\n\nThis action can be reversed.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: willBeSuper ? AppTheme.primaryColor : Colors.orange,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(willBeSuper ? 'Promote' : 'Demote'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      await ref.read(adminManagementServiceProvider).toggleAdminRole(adminId);
+      ref.invalidate(adminListProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(willBeSuper ? '$adminPhone is now a Super Admin' : '$adminPhone is now a View Admin'),
+            backgroundColor: willBeSuper ? AppTheme.primaryColor : Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.errorColor),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final adminsAsync = ref.watch(adminListProvider);
+    final currentUser = ref.watch(authProvider).user;
+    final amISuperAdmin = currentUser?.isSuperAdmin == true;
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showCreateDialog(context, ref),
-        icon: const Icon(Icons.person_add_alt_1),
-        label: const Text('New View Admin'),
-      ),
+      floatingActionButton: amISuperAdmin
+          ? FloatingActionButton.extended(
+              onPressed: () => _showCreateDialog(context, ref),
+              icon: const Icon(Icons.person_add_alt_1),
+              label: const Text('New View Admin'),
+            )
+          : null,
       body: adminsAsync.when(
         loading: () => const LoadingView(),
         error: (err, _) => ErrorView(message: err.toString(), onRetry: () => ref.refresh(adminListProvider)),
@@ -210,6 +359,7 @@ class _AdminsTab extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final admin = admins[index];
                 final isSuperAdmin = admin.role == 'SUPER_ADMIN';
+                final isMe = admin.id == currentUser?.id;
 
                 return Card(
                   elevation: 2,
@@ -246,6 +396,17 @@ class _AdminsTab extends ConsumerWidget {
                                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                                       ),
                                       const SizedBox(width: 8),
+                                      if (isMe)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue.shade50,
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(color: Colors.blue.shade200),
+                                          ),
+                                          child: Text('YOU', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.blue.shade700)),
+                                        ),
+                                      const SizedBox(width: 4),
                                       if (isSuperAdmin)
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -296,6 +457,13 @@ class _AdminsTab extends ConsumerWidget {
                                 ],
                               ),
                             ),
+                            // Reset password button (super admin only, for any admin)
+                            if (amISuperAdmin)
+                              IconButton(
+                                tooltip: 'Reset Password',
+                                icon: const Icon(Icons.lock_reset, color: AppTheme.primaryColor),
+                                onPressed: () => _showResetPasswordDialog(context, ref, admin.id, admin.phone),
+                              ),
                           ],
                         ),
 
@@ -330,28 +498,62 @@ class _AdminsTab extends ConsumerWidget {
                                         ],
                                       ),
                                     ),
+                                    if (amISuperAdmin)
+                                      Switch(
+                                        value: admin.canEdit,
+                                        activeColor: Colors.green,
+                                        onChanged: (value) async {
+                                          try {
+                                            await ref
+                                                .read(adminManagementServiceProvider)
+                                                .setAdminCanEdit(admin.id, value);
+                                            ref.invalidate(adminListProvider);
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    value
+                                                        ? 'Edit access granted to ${admin.phone}'
+                                                        : 'Edit access revoked for ${admin.phone}',
+                                                  ),
+                                                  backgroundColor:
+                                                      value ? AppTheme.successColor : Colors.grey.shade800,
+                                                ),
+                                              );
+                                            }
+                                          } catch (e) {
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.errorColor),
+                                              );
+                                            }
+                                          }
+                                        },
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // Active / Inactive switch
+                              if (amISuperAdmin)
+                                Row(
+                                  children: [
+                                    Text(
+                                      admin.isActive ? 'Active' : 'Inactive',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: admin.isActive ? Colors.black87 : Colors.red,
+                                      ),
+                                    ),
                                     Switch(
-                                      value: admin.canEdit,
-                                      activeColor: Colors.green,
+                                      value: admin.isActive,
                                       onChanged: (value) async {
                                         try {
                                           await ref
                                               .read(adminManagementServiceProvider)
-                                              .setAdminCanEdit(admin.id, value);
+                                              .setAdminActive(admin.id, value);
                                           ref.invalidate(adminListProvider);
-                                          if (context.mounted) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  value
-                                                      ? 'Edit access granted to ${admin.phone}'
-                                                      : 'Edit access revoked for ${admin.phone}',
-                                                ),
-                                                backgroundColor:
-                                                    value ? AppTheme.successColor : Colors.grey.shade800,
-                                              ),
-                                            );
-                                          }
                                         } catch (e) {
                                           if (context.mounted) {
                                             ScaffoldMessenger.of(context).showSnackBar(
@@ -363,54 +565,52 @@ class _AdminsTab extends ConsumerWidget {
                                     ),
                                   ],
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Active / Inactive switch
-                              Row(
-                                children: [
-                                  Text(
-                                    admin.isActive ? 'Active' : 'Inactive',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: admin.isActive ? Colors.black87 : Colors.red,
-                                    ),
-                                  ),
-                                  Switch(
-                                    value: admin.isActive,
-                                    onChanged: (value) async {
-                                      try {
-                                        await ref
-                                            .read(adminManagementServiceProvider)
-                                            .setAdminActive(admin.id, value);
-                                        ref.invalidate(adminListProvider);
-                                      } catch (e) {
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.errorColor),
-                                          );
-                                        }
-                                      }
-                                    },
-                                  ),
-                                ],
-                              ),
                             ],
                           ),
+                          // Toggle Super Admin button — only Super Admin, not for self
+                          if (amISuperAdmin && !isMe) ...[
+                            const SizedBox(height: 8),
+                            OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppTheme.primaryColor,
+                                side: const BorderSide(color: AppTheme.primaryColor),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                              ),
+                              onPressed: () => _confirmToggleRole(context, ref, admin.id, admin.phone, admin.role),
+                              icon: const Icon(Icons.shield_outlined, size: 16),
+                              label: const Text('Promote to Super Admin'),
+                            ),
+                          ],
                         ] else ...[
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 8),
                           Row(
                             children: [
                               Icon(Icons.lock_outline, size: 14, color: Colors.grey.shade600),
                               const SizedBox(width: 4),
-                              Text(
-                                'Super Admin account — has full permissions',
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  color: Colors.grey.shade600,
-                                  fontStyle: FontStyle.italic,
+                              Expanded(
+                                child: Text(
+                                  isMe
+                                      ? 'Your Super Admin account — full permissions'
+                                      : 'Super Admin account — has full permissions',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: Colors.grey.shade600,
+                                    fontStyle: FontStyle.italic,
+                                  ),
                                 ),
                               ),
+                              // Demote button for other super admins
+                              if (amISuperAdmin && !isMe)
+                                TextButton.icon(
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.orange.shade700,
+                                    textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                  ),
+                                  onPressed: () => _confirmToggleRole(context, ref, admin.id, admin.phone, admin.role),
+                                  icon: const Icon(Icons.person_outline, size: 16),
+                                  label: const Text('Demote to View Admin'),
+                                ),
                             ],
                           ),
                         ],

@@ -323,9 +323,11 @@ class AppTheme {
       dialogTheme: DialogThemeData(
         backgroundColor: cardWhite,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        // Ensures dialogs never overflow on small phone screens
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         titleTextStyle: const TextStyle(
-          fontSize: 18, fontWeight: FontWeight.w700, color: textDark,
+          fontSize: 17, fontWeight: FontWeight.w700, color: textDark,
         ),
         contentTextStyle: TextStyle(fontSize: 14, color: Colors.grey.shade700),
       ),

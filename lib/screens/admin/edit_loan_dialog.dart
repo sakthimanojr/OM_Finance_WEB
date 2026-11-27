@@ -41,7 +41,9 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
 
   late String _loanType;
   late String _disbursementMethod;
+  late String _loanStatus;
   late DateTime _startDate;
+  late TextEditingController _paidDuesCountController;
 
   bool _isSaving = false;
   String? _errorMessage;
@@ -69,7 +71,10 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
 
     _loanType = widget.loan.type;
     _disbursementMethod = widget.loan.disbursementMethod.isNotEmpty ? widget.loan.disbursementMethod : 'CASH';
+    _loanStatus = widget.loan.status;
     _startDate = widget.loan.startDate;
+    final currentlyPaid = widget.loan.dues.where((d) => d.status == 'PAID').length;
+    _paidDuesCountController = TextEditingController(text: (currentlyPaid > 0 ? currentlyPaid : 2).toString());
   }
 
   @override
@@ -81,6 +86,7 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
     _interestRateController.dispose();
     _agreementFeeController.dispose();
     _termCountController.dispose();
+    _paidDuesCountController.dispose();
     super.dispose();
   }
 
@@ -156,6 +162,9 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
     final rate = num.tryParse(_interestRateController.text);
     final fee = num.tryParse(_agreementFeeController.text);
     final terms = int.tryParse(_termCountController.text);
+    final paidCount = (_loanStatus == 'ACTIVE' && widget.loan.status == 'CLOSED')
+        ? int.tryParse(_paidDuesCountController.text)
+        : null;
 
     try {
       final service = LoanService();
@@ -167,6 +176,8 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
         startDate: _startDate,
         type: _loanType,
         disbursementMethod: _disbursementMethod,
+        status: _loanStatus,
+        paidDuesCount: paidCount,
         principal: principal,
         interestRate: rate,
         agreementFee: fee,
@@ -205,133 +216,138 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
     final isSuperAdmin = authState.user?.isSuperAdmin ?? false;
 
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       backgroundColor: Colors.white,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 580),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Header
-                Row(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isNarrow = constraints.maxWidth < 420;
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.edit_note_rounded, color: AppTheme.primaryColor, size: 24),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Edit Complete Loan Details',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textDark),
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          Row(
+                          child: const Icon(Icons.edit_note_rounded, color: AppTheme.primaryColor, size: 24),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                margin: const EdgeInsets.only(top: 2),
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.amber.shade100,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  'SUPER ADMIN ACCESS',
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.amber.shade900,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
+                              const Text(
+                                'Edit Loan Details',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textDark),
                               ),
-                              const SizedBox(width: 6),
-                              Text(
-                                '${widget.loan.loanNumber ?? "No ID"} • $_loanType',
-                                style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                              Row(
+                                children: [
+                                  Container(
+                                    margin: const EdgeInsets.only(top: 2),
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.amber.shade100,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      'SUPER ADMIN',
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.amber.shade900,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      '${widget.loan.loanNumber ?? "No ID"} • $_loanType',
+                                      style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.grey),
+                          onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    const Divider(height: 1),
+                    const SizedBox(height: 14),
+
+                    if (!isSuperAdmin) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppTheme.errorColor.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.3)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.lock_outline, color: AppTheme.errorColor, size: 20),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Access Denied: Only Super Admin can modify complete loan records.',
+                                style: TextStyle(color: AppTheme.errorColor, fontSize: 12, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.grey),
-                      onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Divider(height: 1),
-                const SizedBox(height: 16),
+                      const SizedBox(height: 14),
+                    ],
 
-                if (!isSuperAdmin) ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppTheme.errorColor.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.3)),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.lock_outline, color: AppTheme.errorColor, size: 20),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Access Denied: Only Super Admin has permission to modify complete loan records.',
-                            style: TextStyle(color: AppTheme.errorColor, fontSize: 12, fontWeight: FontWeight.w600),
-                          ),
+                    if (_errorMessage != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppTheme.errorColor.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.3)),
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-
-                if (_errorMessage != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppTheme.errorColor.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.3)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.error_outline, color: AppTheme.errorColor, size: 20),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _errorMessage!,
-                            style: const TextStyle(color: AppTheme.errorColor, fontSize: 12),
-                          ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline, color: AppTheme.errorColor, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: const TextStyle(color: AppTheme.errorColor, fontSize: 12),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                      ),
+                      const SizedBox(height: 14),
+                    ],
 
-                // SECTION 1: Borrower Information
-                _buildSectionHeader(Icons.person_outline, 'BORROWER INFORMATION'),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 6,
-                      child: TextFormField(
+                    // SECTION 1: Borrower Information
+                    _buildSectionHeader(Icons.person_outline, 'BORROWER INFORMATION'),
+                    const SizedBox(height: 10),
+                    // Responsive: stack on narrow, side-by-side on wide
+                    if (isNarrow) ...[
+                      TextFormField(
                         controller: _nameController,
                         enabled: isSuperAdmin,
                         decoration: const InputDecoration(
@@ -340,11 +356,8 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
                         ),
                         validator: (val) => (val == null || val.trim().isEmpty) ? 'Name is required' : null,
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      flex: 5,
-                      child: TextFormField(
+                      const SizedBox(height: 10),
+                      TextFormField(
                         controller: _phoneController,
                         enabled: isSuperAdmin,
                         keyboardType: TextInputType.phone,
@@ -361,18 +374,51 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
                           return null;
                         },
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                    ] else
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 6,
+                            child: TextFormField(
+                              controller: _nameController,
+                              enabled: isSuperAdmin,
+                              decoration: const InputDecoration(
+                                labelText: 'Borrower Name *',
+                                prefixIcon: Icon(Icons.badge_outlined, size: 20),
+                              ),
+                              validator: (val) => (val == null || val.trim().isEmpty) ? 'Name is required' : null,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            flex: 5,
+                            child: TextFormField(
+                              controller: _phoneController,
+                              enabled: isSuperAdmin,
+                              keyboardType: TextInputType.phone,
+                              maxLength: 10,
+                              decoration: const InputDecoration(
+                                labelText: 'Mobile Number *',
+                                prefixIcon: Icon(Icons.phone_outlined, size: 20),
+                                counterText: '',
+                              ),
+                              validator: (val) {
+                                if (val == null || val.trim().isEmpty) return 'Phone required';
+                                final clean = val.replaceAll(RegExp(r'\D'), '');
+                                if (clean.length < 10) return '10 digits required';
+                                return null;
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 14),
 
-                // SECTION 2: Loan Setup & Dates
-                _buildSectionHeader(Icons.calendar_month_outlined, 'LOAN IDENTIFIER & DATE'),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
+                    // SECTION 2: Loan Setup & Dates
+                    _buildSectionHeader(Icons.calendar_month_outlined, 'LOAN IDENTIFIER & DATE'),
+                    const SizedBox(height: 10),
+                    if (isNarrow) ...[
+                      TextFormField(
                         controller: _loanNumberController,
                         enabled: isSuperAdmin,
                         decoration: const InputDecoration(
@@ -382,10 +428,8 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
                         ),
                         validator: (val) => (val == null || val.trim().isEmpty) ? 'Loan number required' : null,
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: InkWell(
+                      const SizedBox(height: 10),
+                      InkWell(
                         onTap: isSuperAdmin ? _pickDate : null,
                         borderRadius: BorderRadius.circular(12),
                         child: InputDecorator(
@@ -400,14 +444,44 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
+                    ] else
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _loanNumberController,
+                              enabled: isSuperAdmin,
+                              decoration: const InputDecoration(
+                                labelText: 'Loan Number *',
+                                prefixIcon: Icon(Icons.tag, size: 20),
+                                hintText: 'e.g. LN-103',
+                              ),
+                              validator: (val) => (val == null || val.trim().isEmpty) ? 'Loan number required' : null,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: InkWell(
+                              onTap: isSuperAdmin ? _pickDate : null,
+                              borderRadius: BorderRadius.circular(12),
+                              child: InputDecorator(
+                                decoration: const InputDecoration(
+                                  labelText: 'Loan Created Date *',
+                                  prefixIcon: Icon(Icons.calendar_today_outlined, size: 18),
+                                  suffixIcon: Icon(Icons.arrow_drop_down),
+                                ),
+                                child: Text(
+                                  Formatters.date(_startDate),
+                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 10),
+                    if (isNarrow) ...[
+                      DropdownButtonFormField<String>(
                         value: _loanType,
                         decoration: const InputDecoration(
                           labelText: 'Loan Type *',
@@ -440,10 +514,8 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
                               }
                             : null,
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
                         value: _disbursementMethod,
                         decoration: const InputDecoration(
                           labelText: 'Disbursement Mode',
@@ -459,36 +531,153 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
                               }
                             : null,
                       ),
+                    ] else
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: _loanType,
+                              decoration: const InputDecoration(
+                                labelText: 'Loan Type *',
+                                prefixIcon: Icon(Icons.category_outlined, size: 20),
+                              ),
+                              items: const [
+                                DropdownMenuItem(value: 'WEEKLY', child: Text('WEEKLY')),
+                                DropdownMenuItem(value: 'MONTHLY', child: Text('MONTHLY')),
+                                DropdownMenuItem(value: 'HIGH_VALUE', child: Text('HIGH VALUE')),
+                              ],
+                              onChanged: isSuperAdmin
+                                  ? (val) {
+                                      if (val != null) {
+                                        setState(() {
+                                          _loanType = val;
+                                          if (val == 'MONTHLY') {
+                                            if (_termCountController.text.trim().isEmpty || _termCountController.text == '10') {
+                                              _termCountController.text = '5';
+                                            }
+                                            if (_interestRateController.text == '10') {
+                                              _interestRateController.text = '15';
+                                            }
+                                          } else if (val == 'WEEKLY') {
+                                            if (_termCountController.text.trim().isEmpty || _termCountController.text == '5') {
+                                              _termCountController.text = '10';
+                                            }
+                                          }
+                                        });
+                                      }
+                                    }
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: _disbursementMethod,
+                              decoration: const InputDecoration(
+                                labelText: 'Disbursement Mode',
+                                prefixIcon: Icon(Icons.account_balance_wallet_outlined, size: 20),
+                              ),
+                              items: const [
+                                DropdownMenuItem(value: 'CASH', child: Text('Cash in Hand/Bag')),
+                                DropdownMenuItem(value: 'BANK', child: Text('Bank Transfer')),
+                              ],
+                              onChanged: isSuperAdmin
+                                  ? (val) {
+                                      if (val != null) setState(() => _disbursementMethod = val);
+                                    }
+                                  : null,
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      value: _loanStatus,
+                      decoration: const InputDecoration(
+                        labelText: 'Loan Status *',
+                        prefixIcon: Icon(Icons.sync_alt_rounded, size: 20),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'ACTIVE', child: Text('ACTIVE')),
+                        DropdownMenuItem(value: 'CLOSED', child: Text('CLOSED')),
+                        DropdownMenuItem(value: 'OVERDUE', child: Text('OVERDUE')),
+                        DropdownMenuItem(value: 'COMPLETED', child: Text('COMPLETED')),
+                      ],
+                      onChanged: isSuperAdmin
+                          ? (val) {
+                              if (val != null) setState(() => _loanStatus = val);
+                            }
+                          : null,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                    if (_loanStatus == 'ACTIVE' && widget.loan.status == 'CLOSED') ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.amber.shade300),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.info_outline, color: Colors.amber.shade900, size: 18),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Reactivating Closed Loan',
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.amber.shade900),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              controller: _paidDuesCountController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'Number of Paid Dues to Keep *',
+                                hintText: 'e.g. 2',
+                                helperText: 'Dues after this number will be marked PENDING',
+                              ),
+                              validator: (val) {
+                                if (_loanStatus == 'ACTIVE' && widget.loan.status == 'CLOSED') {
+                                  final n = int.tryParse(val ?? '');
+                                  if (n == null || n < 0) return 'Enter a valid number (e.g. 2)';
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 14),
 
-                // SECTION 3: Financial Details
-                _buildSectionHeader(Icons.currency_rupee, 'FINANCIAL TERMS'),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _principalController,
-                  enabled: isSuperAdmin,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Principal Amount (₹) *',
-                    prefixText: '₹ ',
-                    hintText: 'e.g. 50000',
-                  ),
-                  onChanged: (_) => setState(() {}),
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) return 'Principal is required';
-                    final numVal = num.tryParse(val.trim());
-                    if (numVal == null || numVal <= 0) return 'Enter a valid amount';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
+                    // SECTION 3: Financial Details
+                    _buildSectionHeader(Icons.currency_rupee, 'FINANCIAL TERMS'),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: _principalController,
+                      enabled: isSuperAdmin,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Principal Amount (₹) *',
+                        prefixText: '₹ ',
+                        hintText: 'e.g. 50000',
+                      ),
+                      onChanged: (_) => setState(() {}),
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) return 'Principal is required';
+                        final numVal = num.tryParse(val.trim());
+                        if (numVal == null || numVal <= 0) return 'Enter a valid amount';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    // Interest Rate + Agreement Fee — always stack on mobile
+                    if (isNarrow) ...[
+                      TextFormField(
                         controller: _interestRateController,
                         enabled: isSuperAdmin,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -504,10 +693,8 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
                           return null;
                         },
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextFormField(
+                      const SizedBox(height: 10),
+                      TextFormField(
                         controller: _agreementFeeController,
                         enabled: isSuperAdmin,
                         keyboardType: TextInputType.number,
@@ -517,137 +704,172 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
                         ),
                         onChanged: (_) => setState(() {}),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                if (_loanType != 'HIGH_VALUE') ...[
-                  TextFormField(
-                    controller: _termCountController,
-                    enabled: isSuperAdmin,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: _loanType == 'WEEKLY' ? 'Term (Weeks) *' : 'Term (Months) *',
-                      hintText: _loanType == 'WEEKLY' ? 'e.g. 10' : 'e.g. 5',
-                    ),
-                    onChanged: (_) => setState(() {}),
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) return 'Term count required';
-                      final intVal = int.tryParse(val.trim());
-                      if (intVal == null || intVal < 1) return 'Must be 1 or more';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                ],
-
-                // Live Preview Card
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.15)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'UPDATED LOAN SUMMARY',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.primaryColor,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      if (_loanType != 'HIGH_VALUE') ...[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Total Deductions (Int + Fee):', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
-                            Text(
-                              Formatters.currency(preview['totalDeductions'] ?? 0),
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.errorColor),
+                    ] else
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _interestRateController,
+                              enabled: isSuperAdmin,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: const InputDecoration(
+                                labelText: 'Interest Rate (%) *',
+                                suffixText: '%',
+                              ),
+                              onChanged: (_) => setState(() {}),
+                              validator: (val) {
+                                if (val == null || val.trim().isEmpty) return 'Rate is required';
+                                final numVal = num.tryParse(val.trim());
+                                if (numVal == null || numVal < 0) return 'Valid rate required';
+                                return null;
+                              },
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                      ],
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Disbursed to Customer:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
-                          Text(
-                            Formatters.currency(preview['disbursed']),
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textDark),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _agreementFeeController,
+                              enabled: isSuperAdmin,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'Agreement Fee (₹)',
+                                prefixText: '₹ ',
+                              ),
+                              onChanged: (_) => setState(() {}),
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            _loanType == 'HIGH_VALUE' ? 'Monthly Interest Due:' : 'Installment per Due:',
-                            style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
-                          ),
-                          Text(
-                            Formatters.currency(preview['installment']),
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Total Repayable:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
-                          Text(
-                            Formatters.currency(preview['total']),
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.successColor),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Note: Saving changes will recalculate unpaid dues, loan schedules, customer records, and financial reports.',
-                  style: TextStyle(fontSize: 11, color: Colors.grey, height: 1.3),
-                ),
-                const SizedBox(height: 20),
+                    const SizedBox(height: 10),
 
-                // Action Buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
-                        child: const Text('Cancel'),
+                    if (_loanType != 'HIGH_VALUE') ...[
+                      TextFormField(
+                        controller: _termCountController,
+                        enabled: isSuperAdmin,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: _loanType == 'WEEKLY' ? 'Term (Weeks) *' : 'Term (Months) *',
+                          hintText: _loanType == 'WEEKLY' ? 'e.g. 10' : 'e.g. 5',
+                        ),
+                        onChanged: (_) => setState(() {}),
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) return 'Term count required';
+                          final intVal = int.tryParse(val.trim());
+                          if (intVal == null || intVal < 1) return 'Must be 1 or more';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 14),
+                    ],
+
+                    // Live Preview Card
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.15)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'UPDATED LOAN SUMMARY',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.primaryColor,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          if (_loanType != 'HIGH_VALUE') ...[
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Flexible(child: Text('Total Deductions (Int + Fee):', style: TextStyle(fontSize: 12, color: AppTheme.textMuted))),
+                                Text(
+                                  Formatters.currency(preview['totalDeductions'] ?? 0),
+                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.errorColor),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                          ],
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Disbursed to Customer:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                              Text(
+                                Formatters.currency(preview['disbursed']),
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textDark),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _loanType == 'HIGH_VALUE' ? 'Monthly Interest Due:' : 'Installment per Due:',
+                                style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                              ),
+                              Text(
+                                Formatters.currency(preview['installment']),
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Total Repayable:', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                              Text(
+                                Formatters.currency(preview['total']),
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.successColor),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: (_isSaving || !isSuperAdmin) ? null : _submit,
-                        child: _isSaving
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                              )
-                            : const Text('Save Changes'),
-                      ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Note: Saving changes will recalculate unpaid dues, loan schedules, customer records, and financial reports.',
+                      style: TextStyle(fontSize: 11, color: Colors.grey, height: 1.3),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // Action Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
+                            child: const Text('Cancel'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: (_isSaving || !isSuperAdmin) ? null : _submit,
+                            child: _isSaving
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  )
+                                : const Text('Save Changes'),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

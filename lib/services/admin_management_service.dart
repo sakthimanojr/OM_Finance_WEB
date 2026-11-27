@@ -58,6 +58,24 @@ class AdminManagementService {
     }
   }
 
+  Future<void> resetAdminPassword(String id, String newPassword) async {
+    try {
+      await _dio.post('${ApiConstants.adminViewAdmins}/$id/reset-password',
+          data: {'newPassword': newPassword});
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
+  Future<AdminUser> toggleAdminRole(String id) async {
+    try {
+      final response = await _dio.patch('${ApiConstants.adminViewAdmins}/$id/toggle-role');
+      return AdminUser.fromJson(response.data['data'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
   Future<SystemConfig> getConfig() async {
     try {
       final response = await _dio.get(ApiConstants.adminConfig);
