@@ -150,8 +150,9 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _startDate,
-      firstDate: DateTime.now().subtract(const Duration(days: 30)),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2050),
+      helpText: 'Select Loan Start Date',
     );
     if (picked != null) setState(() => _startDate = picked);
   }
