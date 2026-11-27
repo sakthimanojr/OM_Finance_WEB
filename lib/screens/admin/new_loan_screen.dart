@@ -33,6 +33,9 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
   final _panController = TextEditingController();
   final _guarantorNameController = TextEditingController();
   final _guarantorPhoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _autoSyncPassword = true;
 
   // Loan controllers
   final _loanNumberController = TextEditingController();
@@ -50,6 +53,8 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
   @override
   void initState() {
     super.initState();
+    _phoneController.addListener(_onPhoneChanged);
+    _passwordController.addListener(_onPasswordChanged);
     if (widget.customerId != null) {
       _selectedCustomerId = widget.customerId;
     }
@@ -61,6 +66,20 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
       _termCountController.text = '10';
     }
     _loadNextLoanNumber();
+  }
+
+  void _onPhoneChanged() {
+    if (_autoSyncPassword) {
+      final phone = _phoneController.text.trim();
+      _passwordController.text = phone;
+    }
+  }
+
+  void _onPasswordChanged() {
+    final phone = _phoneController.text.trim();
+    if (_passwordController.text != phone && _autoSyncPassword) {
+      setState(() => _autoSyncPassword = false);
+    }
   }
 
   Future<void> _loadNextLoanNumber() async {
@@ -75,6 +94,8 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
 
   @override
   void dispose() {
+    _phoneController.removeListener(_onPhoneChanged);
+    _passwordController.removeListener(_onPasswordChanged);
     _nameController.dispose();
     _phoneController.dispose();
     _fatherNameController.dispose();
@@ -83,6 +104,7 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
     _panController.dispose();
     _guarantorNameController.dispose();
     _guarantorPhoneController.dispose();
+    _passwordController.dispose();
     _loanNumberController.dispose();
     _principalController.dispose();
     _interestRateController.dispose();
@@ -157,7 +179,7 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
         if (_panController.text.trim().isNotEmpty) 'pan': _panController.text.trim().toUpperCase(),
         if (_guarantorNameController.text.trim().isNotEmpty) 'guarantorName': _guarantorNameController.text.trim(),
         if (_guarantorPhoneController.text.trim().isNotEmpty) 'guarantorPhone': _guarantorPhoneController.text.trim(),
-        'password': phone,
+        'password': _passwordController.text.trim().isNotEmpty ? _passwordController.text.trim() : phone,
       };
       final customerIdParam = _selectedCustomerId;
 
@@ -289,7 +311,20 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                                     _panController.text = match.pan ?? '';
                                     _guarantorNameController.text = match.guarantorName ?? '';
                                     _guarantorPhoneController.text = match.guarantorPhone ?? '';
+                                    _passwordController.text = '';
+                                    _autoSyncPassword = false;
                                   }
+                                } else {
+                                  _nameController.clear();
+                                  _phoneController.clear();
+                                  _fatherNameController.clear();
+                                  _addressController.clear();
+                                  _aadhaarController.clear();
+                                  _panController.clear();
+                                  _guarantorNameController.clear();
+                                  _guarantorPhoneController.clear();
+                                  _passwordController.clear();
+                                  _autoSyncPassword = true;
                                 }
                               });
                             },
@@ -442,6 +477,111 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                         ),
                       ),
                     ],
+                  ),
+
+                  const SizedBox(height: 16),
+                  const Divider(height: 1),
+                  const SizedBox(height: 14),
+
+                  // Customer App Login Credentials
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.lock_person_outlined, color: AppTheme.primaryColor, size: 18),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Borrower App Login Credentials',
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.textDark),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Info card about User ID and Password
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.15)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.info_outline, color: AppTheme.primaryColor, size: 16),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _selectedCustomerId != null
+                                    ? 'Existing borrower logs in with mobile number. Leave password blank to keep current password.'
+                                    : 'Borrower logs into the portal using their Mobile Number as User ID and this password.',
+                                style: TextStyle(fontSize: 12, color: Colors.grey.shade800, fontWeight: FontWeight.w500),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'User ID: ${_phoneController.text.trim().isEmpty ? '(Enter mobile number above)' : _phoneController.text.trim()}',
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.primaryColor),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
+                      labelText: _selectedCustomerId != null ? 'New Password (Optional)' : 'Login Password *',
+                      hintText: _selectedCustomerId != null ? 'Leave blank to keep current password' : 'Default: same as mobile number',
+                      prefixIcon: const Icon(Icons.lock_outline, size: 20),
+                      suffixIcon: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                              size: 20,
+                            ),
+                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                            tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+                          ),
+                          if (_selectedCustomerId == null)
+                            IconButton(
+                              icon: const Icon(Icons.refresh_outlined, size: 20),
+                              onPressed: () {
+                                setState(() {
+                                  _passwordController.text = _phoneController.text.trim();
+                                  _autoSyncPassword = true;
+                                });
+                              },
+                              tooltip: 'Reset to mobile number',
+                            ),
+                        ],
+                      ),
+                    ),
+                    validator: (v) {
+                      if (_selectedCustomerId != null) {
+                        if (v != null && v.trim().isNotEmpty && v.trim().length < 6) {
+                          return 'Password must be at least 6 characters';
+                        }
+                        return null;
+                      }
+                      final pass = (v == null || v.trim().isEmpty) ? _phoneController.text.trim() : v.trim();
+                      if (pass.isEmpty) return 'Password is required';
+                      if (pass.length < 6) return 'Password must be at least 6 characters';
+                      return null;
+                    },
                   ),
                 ],
               ),
