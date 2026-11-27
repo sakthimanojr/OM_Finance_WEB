@@ -307,20 +307,76 @@ class _OverdueDetailScreenState extends State<OverdueDetailScreen> {
           ),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (phone.isNotEmpty) ...[
-                  Text(phone, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
-                  const SizedBox(width: 8),
-                  InkWell(
-                    onTap: () => _callPhone(phone),
-                    child: const Icon(Icons.phone, size: 14, color: AppTheme.primaryColor),
-                  ),
-                ],
-                const Spacer(),
-                Text(
-                  Formatters.currency(totalOverdue),
-                  style: const TextStyle(fontWeight: FontWeight.w800, color: AppTheme.errorColor, fontSize: 14),
+                Row(
+                  children: [
+                    if (phone.isNotEmpty) ...[
+                      Text(phone, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                      const SizedBox(width: 8),
+                      InkWell(
+                        onTap: () => _callPhone(phone),
+                        child: const Icon(Icons.phone, size: 14, color: AppTheme.primaryColor),
+                      ),
+                    ],
+                    const Spacer(),
+                    Text(
+                      Formatters.currency(totalOverdue),
+                      style: const TextStyle(fontWeight: FontWeight.w800, color: AppTheme.errorColor, fontSize: 14),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppTheme.errorColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.warning_amber_rounded, size: 12, color: AppTheme.errorColor),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$missedCount overdue due${missedCount == 1 ? '' : 's'}',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.errorColor),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (dues.length > missedCount) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                        ),
+                        child: Text(
+                          '${dues.length - missedCount} upcoming',
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.orange),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '$maxDays days late',
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade700),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -333,7 +389,10 @@ class _OverdueDetailScreenState extends State<OverdueDetailScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('$missedCount Missed Due${missedCount == 1 ? '' : 's'}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  Text(
+                    '$missedCount overdue · ${dues.length} total due${dues.length == 1 ? '' : 's'}',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.errorColor),
+                  ),
                   if (customerId.isNotEmpty)
                     TextButton(
                       style: TextButton.styleFrom(visualDensity: VisualDensity.compact),

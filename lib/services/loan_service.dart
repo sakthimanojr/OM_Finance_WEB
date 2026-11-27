@@ -97,13 +97,18 @@ class LoanService {
   }
 
   Future<Loan> updateLoan({
-
     required String loanId,
     num? principal,
     num? interestRate,
     num? agreementFee,
     int? termCount,
     DateTime? startDate,
+    String? loanNumber,
+    String? customerName,
+    String? customerPhone,
+    String? type,
+    String? disbursementMethod,
+    String? status,
   }) async {
     try {
       final response = await _dio.patch(
@@ -114,6 +119,12 @@ class LoanService {
           if (agreementFee != null) 'agreementFee': agreementFee,
           if (termCount != null) 'termCount': termCount,
           if (startDate != null) 'startDate': startDate.toIso8601String(),
+          if (loanNumber != null) 'loanNumber': loanNumber,
+          if (customerName != null) 'customerName': customerName,
+          if (customerPhone != null) 'customerPhone': customerPhone,
+          if (type != null) 'type': type,
+          if (disbursementMethod != null) 'disbursementMethod': disbursementMethod,
+          if (status != null) 'status': status,
         },
       );
       return Loan.fromJson(response.data['data'] as Map<String, dynamic>);

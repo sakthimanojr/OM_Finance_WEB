@@ -303,6 +303,68 @@ class _LoanListScreenState extends ConsumerState<LoanListScreen> {
                                         fontSize: 11,
                                       ),
                                     ),
+                                    // Show overdue due count badge for OVERDUE loans
+                                    if (loan.status == 'OVERDUE') ...[
+                                      const Spacer(),
+                                      Builder(builder: (_) {
+                                        final today = DateTime.now();
+                                        final startOfDay = DateTime(today.year, today.month, today.day);
+                                        final overdueCount = loan.dues.where((d) =>
+                                          d.status != 'PAID' &&
+                                          d.dueDate.isBefore(startOfDay)
+                                        ).length;
+                                        final pendingCount = loan.dues.where((d) =>
+                                          d.status != 'PAID'
+                                        ).length;
+                                        return Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                              decoration: BoxDecoration(
+                                                color: AppTheme.errorColor.withValues(alpha: 0.1),
+                                                borderRadius: BorderRadius.circular(8),
+                                                border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.3)),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Icon(Icons.warning_amber_rounded, size: 11, color: AppTheme.errorColor),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    '$overdueCount overdue due${overdueCount == 1 ? '' : 's'}',
+                                                    style: const TextStyle(
+                                                      fontSize: 10,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: AppTheme.errorColor,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            if (pendingCount > overdueCount) ...[
+                                              const SizedBox(width: 6),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.orange.withValues(alpha: 0.1),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                                                ),
+                                                child: Text(
+                                                  '${pendingCount - overdueCount} upcoming',
+                                                  style: const TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.orange,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        );
+                                      }),
+                                    ],
                                   ],
                                 ),
                               ],

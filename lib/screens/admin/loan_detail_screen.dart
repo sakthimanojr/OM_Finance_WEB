@@ -5,6 +5,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/state_views.dart';
 import '../../core/widgets/status_badge.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/loan_provider.dart';
 import '../../services/payment_service.dart';
 import '../../providers/customer_provider.dart';
@@ -17,6 +18,8 @@ class LoanDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loanAsync = ref.watch(loanDetailProvider(loanId));
+    final authState = ref.watch(authProvider);
+    final isSuperAdmin = authState.user?.isSuperAdmin ?? false;
 
     return Scaffold(
       backgroundColor: AppTheme.surfaceLight,
@@ -26,16 +29,17 @@ class LoanDetailScreen extends ConsumerWidget {
         title: const Text('Loan Details', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
         actions: [
           loanAsync.maybeWhen(
-            data: (loan) => loan.status != 'CLOSED' && loan.status != 'COMPLETED'
+            data: (loan) => (isSuperAdmin && loan.status != 'CLOSED' && loan.status != 'COMPLETED')
                 ? IconButton(
                     icon: const Icon(Icons.edit_note_rounded),
-                    tooltip: 'Edit Loan Amount',
+                    tooltip: 'Edit Complete Loan Details (Super Admin)',
                     onPressed: () async {
                       final updated = await EditLoanDialog.show(context, loan);
                       if (updated == true) {
                         ref.invalidate(loanDetailProvider(loanId));
                         ref.invalidate(loanListProvider(loan.customerId));
                         ref.invalidate(customerDetailProvider(loan.customerId));
+                        ref.invalidate(adminLoanListProvider);
                       }
                     },
                   )
