@@ -7,6 +7,7 @@ import '../../core/widgets/state_views.dart';
 import '../../core/widgets/status_badge.dart';
 import '../../providers/customer_provider.dart';
 import '../../providers/loan_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../shared/documents_section.dart';
 import 'edit_customer_screen.dart';
 import 'edit_loan_dialog.dart';
@@ -20,6 +21,7 @@ class CustomerDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final customerAsync = ref.watch(customerDetailProvider(customerId));
     final loansAsync = ref.watch(loanListProvider(customerId));
+    final isSuperAdmin = ref.watch(authProvider).user?.isSuperAdmin ?? false;
 
     return Scaffold(
       appBar: AppBar(
@@ -403,16 +405,18 @@ class CustomerDetailScreen extends ConsumerWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   StatusBadge(status: loan.status),
-                                  if (loan.status != 'CLOSED' && loan.status != 'COMPLETED') ...[
+                                  if (isSuperAdmin || (loan.status != 'CLOSED' && loan.status != 'COMPLETED')) ...[
                                     const SizedBox(width: 4),
                                     IconButton(
                                       icon: const Icon(Icons.edit_note_rounded, color: AppTheme.primaryColor),
-                                      tooltip: 'Edit Loan Amount',
+                                      tooltip: 'Edit / Delete Loan',
                                       onPressed: () async {
-                                        final updated = await EditLoanDialog.show(context, loan);
-                                        if (updated == true) {
+                                        final result = await EditLoanDialog.show(context, loan);
+                                        if (result != null) {
                                           ref.invalidate(customerDetailProvider(customerId));
                                           ref.invalidate(loanListProvider(customerId));
+                                          ref.invalidate(adminLoanListProvider);
+                                          ref.invalidate(customerListProvider);
                                         }
                                       },
                                     ),

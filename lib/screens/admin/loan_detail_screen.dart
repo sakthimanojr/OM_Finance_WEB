@@ -27,16 +27,25 @@ class LoanDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
-        title: const Text('Loan Details', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+        title: const Text(
+          'Loan Details',
+          style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
+        ),
         actions: [
           loanAsync.maybeWhen(
             data: (loan) => isSuperAdmin
                 ? IconButton(
                     icon: const Icon(Icons.edit_note_rounded),
-                    tooltip: 'Edit Complete Loan Details (Super Admin)',
+                    tooltip: 'Edit / Delete Loan (Super Admin)',
                     onPressed: () async {
-                      final updated = await EditLoanDialog.show(context, loan);
-                      if (updated == true) {
+                      final result = await EditLoanDialog.show(context, loan);
+                      if (result == 'deleted') {
+                        ref.invalidate(loanListProvider(loan.customerId));
+                        ref.invalidate(customerDetailProvider(loan.customerId));
+                        ref.invalidate(adminLoanListProvider);
+                        ref.invalidate(customerListProvider);
+                        if (context.mounted) Navigator.of(context).pop();
+                      } else if (result != null) {
                         ref.invalidate(loanDetailProvider(loanId));
                         ref.invalidate(loanListProvider(loan.customerId));
                         ref.invalidate(customerDetailProvider(loan.customerId));
@@ -53,8 +62,9 @@ class LoanDetailScreen extends ConsumerWidget {
       body: loanAsync.when(
         loading: () => const LoadingView(),
         error: (err, _) => ErrorView(
-            message: err.toString(),
-            onRetry: () => ref.refresh(loanDetailProvider(loanId))),
+          message: err.toString(),
+          onRetry: () => ref.refresh(loanDetailProvider(loanId)),
+        ),
         data: (loan) => RefreshIndicator(
           onRefresh: () async => ref.refresh(loanDetailProvider(loanId)),
           child: ListView(
@@ -107,7 +117,9 @@ class LoanDetailScreen extends ConsumerWidget {
                                       Text(
                                         'Loan #${loan.loanNumber}',
                                         style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.7),
+                                          color: Colors.white.withValues(
+                                            alpha: 0.7,
+                                          ),
                                           fontWeight: FontWeight.w600,
                                           fontSize: 14,
                                         ),
@@ -117,7 +129,9 @@ class LoanDetailScreen extends ConsumerWidget {
                               ),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 4),
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.18),
                                   borderRadius: BorderRadius.circular(20),
@@ -138,20 +152,27 @@ class LoanDetailScreen extends ConsumerWidget {
                             Text(
                               loan.customerName!,
                               style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.65),
-                                  fontSize: 14),
+                                color: Colors.white.withValues(alpha: 0.65),
+                                fontSize: 14,
+                              ),
                             ),
                           ],
                           const SizedBox(height: 20),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _WhiteStatCol('Principal',
-                                  Formatters.currency(loan.principal)),
-                              _WhiteStatCol('Collected',
-                                  Formatters.currency(loan.totalCollection)),
-                              _WhiteStatCol('Outstanding',
-                                  Formatters.currency(loan.outstandingAmount)),
+                              _WhiteStatCol(
+                                'Principal',
+                                Formatters.currency(loan.principal),
+                              ),
+                              _WhiteStatCol(
+                                'Collected',
+                                Formatters.currency(loan.totalCollection),
+                              ),
+                              _WhiteStatCol(
+                                'Outstanding',
+                                Formatters.currency(loan.outstandingAmount),
+                              ),
                             ],
                           ),
                         ],
@@ -191,19 +212,28 @@ class LoanDetailScreen extends ConsumerWidget {
                           ),
                         ),
                         const Spacer(),
-                        Icon(Icons.receipt_long_outlined,
-                            color: Colors.grey.shade400, size: 20),
+                        Icon(
+                          Icons.receipt_long_outlined,
+                          color: Colors.grey.shade400,
+                          size: 20,
+                        ),
                       ],
                     ),
                     const Divider(height: 24),
-                    _DetailRow('Disbursed Amount',
-                        Formatters.currency(loan.disbursedAmount)),
                     _DetailRow(
-                        'Interest Rate', '${loan.interestRate}%',
-                        valueColor: AppTheme.accentColor),
+                      'Disbursed Amount',
+                      Formatters.currency(loan.disbursedAmount),
+                    ),
+                    _DetailRow(
+                      'Interest Rate',
+                      '${loan.interestRate}%',
+                      valueColor: AppTheme.accentColor,
+                    ),
                     if (loan.agreementFee > 0)
-                      _DetailRow('Agreement Fee',
-                          Formatters.currency(loan.agreementFee)),
+                      _DetailRow(
+                        'Agreement Fee',
+                        Formatters.currency(loan.agreementFee),
+                      ),
                     _DetailRow('Start Date', Formatters.date(loan.startDate)),
                     if (loan.endDate != null)
                       _DetailRow('End Date', Formatters.date(loan.endDate)),
@@ -223,7 +253,11 @@ class LoanDetailScreen extends ConsumerWidget {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.history_toggle_off_rounded, color: Colors.amber.shade900, size: 28),
+                      Icon(
+                        Icons.history_toggle_off_rounded,
+                        color: Colors.amber.shade900,
+                        size: 28,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -231,12 +265,19 @@ class LoanDetailScreen extends ConsumerWidget {
                           children: [
                             Text(
                               'Loan is currently Closed',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.amber.shade900),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: Colors.amber.shade900,
+                              ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               'Closed by mistake? Reactivate it to ACTIVE anytime.',
-                              style: TextStyle(fontSize: 11, color: Colors.grey.shade800),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey.shade800,
+                              ),
                             ),
                           ],
                         ),
@@ -246,12 +287,24 @@ class LoanDetailScreen extends ConsumerWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.primaryColor,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                         icon: const Icon(Icons.replay_rounded, size: 16),
-                        label: const Text('Reactivate', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                        onPressed: () => _showReactivateDialog(context, ref, loan),
+                        label: const Text(
+                          'Reactivate',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                        onPressed: () =>
+                            _showReactivateDialog(context, ref, loan),
                       ),
                     ],
                   ),
@@ -275,12 +328,19 @@ class LoanDetailScreen extends ConsumerWidget {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(14),
                       onTap: () => _showRepayPrincipalDialog(
-                          context, ref, loan.id, loan.outstandingAmount),
+                        context,
+                        ref,
+                        loan.id,
+                        loan.outstandingAmount,
+                      ),
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.payments_outlined,
-                              color: Colors.white, size: 20),
+                          Icon(
+                            Icons.payments_outlined,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             'Record Principal Repayment',
@@ -313,9 +373,10 @@ class LoanDetailScreen extends ConsumerWidget {
                   Text(
                     '${loan.dues.where((d) => d.status == 'PAID').length}/${loan.dues.length} paid',
                     style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600),
+                      color: Colors.grey.shade500,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -327,100 +388,107 @@ class LoanDetailScreen extends ConsumerWidget {
                 child: LinearProgressIndicator(
                   value: loan.dues.isEmpty
                       ? 0
-                      : loan.dues
-                              .where((d) => d.status == 'PAID')
-                              .length /
-                          loan.dues.length,
+                      : loan.dues.where((d) => d.status == 'PAID').length /
+                            loan.dues.length,
                   backgroundColor: Colors.grey.shade200,
                   valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppTheme.successColor),
+                    AppTheme.successColor,
+                  ),
                   minHeight: 6,
                 ),
               ),
               const SizedBox(height: 16),
 
-              ...loan.dues.map(
-                (due) {
-                  final isPaid = due.status == 'PAID';
-                  final isOverdue = due.status == 'OVERDUE' || due.status == 'MISSED';
-                  final borderColor = isPaid
-                      ? AppTheme.successColor.withValues(alpha: 0.3)
-                      : isOverdue
-                          ? AppTheme.errorColor.withValues(alpha: 0.3)
-                          : Colors.grey.shade100;
+              ...loan.dues.map((due) {
+                final isPaid = due.status == 'PAID';
+                final isOverdue =
+                    due.status == 'OVERDUE' || due.status == 'MISSED';
+                final borderColor = isPaid
+                    ? AppTheme.successColor.withValues(alpha: 0.3)
+                    : isOverdue
+                    ? AppTheme.errorColor.withValues(alpha: 0.3)
+                    : Colors.grey.shade100;
 
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: borderColor),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: borderColor),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.02),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    leading: CircleAvatar(
+                      radius: 16,
+                      backgroundColor: isPaid
+                          ? AppTheme.successColor.withValues(alpha: 0.1)
+                          : isOverdue
+                          ? AppTheme.errorColor.withValues(alpha: 0.1)
+                          : Colors.grey.shade100,
+                      child: Text(
+                        '${due.dueNumber}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: isPaid
+                              ? AppTheme.successColor
+                              : isOverdue
+                              ? AppTheme.errorColor
+                              : Colors.grey.shade600,
                         ),
+                      ),
+                    ),
+                    title: Text(
+                      Formatters.currency(due.amount),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Due ${Formatters.date(due.dueDate)}',
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 12,
+                          ),
+                        ),
+                        if (due.status == 'PAID' && due.paidDate != null)
+                          Text(
+                            'Paid on ${Formatters.dateTime(due.paidDate!)}',
+                            style: const TextStyle(
+                              color: AppTheme.successColor,
+                              fontSize: 11,
+                            ),
+                          ),
                       ],
                     ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 4),
-                      leading: CircleAvatar(
-                        radius: 16,
-                        backgroundColor: isPaid
-                            ? AppTheme.successColor.withValues(alpha: 0.1)
-                            : isOverdue
-                                ? AppTheme.errorColor.withValues(alpha: 0.1)
-                                : Colors.grey.shade100,
-                        child: Text(
-                          '${due.dueNumber}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: isPaid
-                                ? AppTheme.successColor
-                                : isOverdue
-                                    ? AppTheme.errorColor
-                                    : Colors.grey.shade600,
+                    trailing: StatusBadge(status: due.status),
+                    onTap: due.status == 'PAID'
+                        ? null
+                        : () => _showCollectPaymentSheet(
+                            context,
+                            ref,
+                            loanId,
+                            due.id,
+                            due.amount,
+                            due.dueNumber,
                           ),
-                        ),
-                      ),
-                      title: Text(
-                        Formatters.currency(due.amount),
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Due ${Formatters.date(due.dueDate)}',
-                            style: TextStyle(
-                                color: Colors.grey.shade500, fontSize: 12),
-                          ),
-                          if (due.status == 'PAID' && due.paidDate != null)
-                            Text(
-                              'Paid on ${Formatters.dateTime(due.paidDate!)}',
-                              style: const TextStyle(
-                                  color: AppTheme.successColor, fontSize: 11),
-                            ),
-                        ],
-                      ),
-                      trailing: StatusBadge(status: due.status),
-                      onTap: due.status == 'PAID'
-                          ? null
-                          : () => _showCollectPaymentSheet(
-                              context,
-                              ref,
-                              loanId,
-                              due.id,
-                              due.amount,
-                              due.dueNumber),
-                    ),
-                  );
-                },
-              ),
+                  ),
+                );
+              }),
             ],
           ),
         ),
@@ -428,7 +496,11 @@ class LoanDetailScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _showReactivateDialog(BuildContext context, WidgetRef ref, dynamic loan) async {
+  Future<void> _showReactivateDialog(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic loan,
+  ) async {
     final paidCountController = TextEditingController(text: '2');
     bool isSubmitting = false;
     String? error;
@@ -441,7 +513,10 @@ class LoanDetailScreen extends ConsumerWidget {
             children: [
               Icon(Icons.replay_rounded, color: AppTheme.primaryColor),
               SizedBox(width: 8),
-              Text('Reactivate Loan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(
+                'Reactivate Loan',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
             ],
           ),
           content: Column(
@@ -469,7 +544,13 @@ class LoanDetailScreen extends ConsumerWidget {
               ),
               if (error != null) ...[
                 const SizedBox(height: 8),
-                Text(error!, style: const TextStyle(color: AppTheme.errorColor, fontSize: 12)),
+                Text(
+                  error!,
+                  style: const TextStyle(
+                    color: AppTheme.errorColor,
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ],
           ),
@@ -479,13 +560,20 @@ class LoanDetailScreen extends ConsumerWidget {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor, foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+              ),
               onPressed: isSubmitting
                   ? null
                   : () async {
-                      final count = int.tryParse(paidCountController.text.trim());
+                      final count = int.tryParse(
+                        paidCountController.text.trim(),
+                      );
                       if (count == null || count < 0) {
-                        setDialogState(() => error = 'Enter a valid count (0 or more)');
+                        setDialogState(
+                          () => error = 'Enter a valid count (0 or more)',
+                        );
                         return;
                       }
                       setDialogState(() {
@@ -506,7 +594,9 @@ class LoanDetailScreen extends ConsumerWidget {
                           Navigator.pop(dialogCtx);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Loan #${loan.loanNumber ?? ""} reactivated to ACTIVE! ($count dues kept PAID, remaining set to PENDING)'),
+                              content: Text(
+                                'Loan #${loan.loanNumber ?? ""} reactivated to ACTIVE! ($count dues kept PAID, remaining set to PENDING)',
+                              ),
                               backgroundColor: AppTheme.successColor,
                             ),
                           );
@@ -519,7 +609,14 @@ class LoanDetailScreen extends ConsumerWidget {
                       }
                     },
               child: isSubmitting
-                  ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
                   : const Text('Reactivate to Active'),
             ),
           ],
@@ -529,17 +626,24 @@ class LoanDetailScreen extends ConsumerWidget {
   }
 
   void _showRepayPrincipalDialog(
-      BuildContext context, WidgetRef ref, String loanId, num maxAmount) {
+    BuildContext context,
+    WidgetRef ref,
+    String loanId,
+    num maxAmount,
+  ) {
     final controller = TextEditingController();
     String method = 'CASH';
     showDialog(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('Record Principal Repayment',
-              style: TextStyle(fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Record Principal Repayment',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -556,7 +660,9 @@ class LoanDetailScreen extends ConsumerWidget {
                 items: const [
                   DropdownMenuItem(value: 'CASH', child: Text('Cash')),
                   DropdownMenuItem(
-                      value: 'BANK_TRANSFER', child: Text('Bank Transfer')),
+                    value: 'BANK_TRANSFER',
+                    child: Text('Bank Transfer'),
+                  ),
                 ],
                 onChanged: (value) =>
                     setDialogState(() => method = value ?? 'CASH'),
@@ -566,8 +672,9 @@ class LoanDetailScreen extends ConsumerWidget {
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
             ElevatedButton(
               onPressed: () async {
                 final amount = num.tryParse(controller.text);
@@ -580,9 +687,12 @@ class LoanDetailScreen extends ConsumerWidget {
                   if (context.mounted) Navigator.pop(dialogContext);
                 } catch (e) {
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
                         content: Text(e.toString()),
-                        backgroundColor: AppTheme.errorColor));
+                        backgroundColor: AppTheme.errorColor,
+                      ),
+                    );
                   }
                 }
               },
@@ -605,7 +715,8 @@ class LoanDetailScreen extends ConsumerWidget {
     String method = 'CASH';
     final refController = TextEditingController();
     bool isProcessing = false;
-    DateTime paidDate = DateTime.now(); // defaults to today; admin can change for backdated entries
+    DateTime paidDate =
+        DateTime.now(); // defaults to today; admin can change for backdated entries
 
     showModalBottomSheet(
       context: context,
@@ -637,9 +748,13 @@ class LoanDetailScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              Text('Collect Payment — Due #$dueNumber',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(
+                'Collect Payment — Due #$dueNumber',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(16),
@@ -650,8 +765,10 @@ class LoanDetailScreen extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Amount',
-                        style: TextStyle(fontWeight: FontWeight.w500)),
+                    const Text(
+                      'Amount',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
                     Text(
                       Formatters.currency(amount),
                       style: const TextStyle(
@@ -677,21 +794,33 @@ class LoanDetailScreen extends ConsumerWidget {
                   if (picked != null) setSheetState(() => paidDate = picked);
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey.shade400),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_today_outlined, size: 18, color: AppTheme.primaryColor),
+                      const Icon(
+                        Icons.calendar_today_outlined,
+                        size: 18,
+                        color: AppTheme.primaryColor,
+                      ),
                       const SizedBox(width: 10),
-                      const Text('Paid Date',
-                          style: TextStyle(color: Colors.grey, fontSize: 13)),
+                      const Text(
+                        'Paid Date',
+                        style: TextStyle(color: Colors.grey, fontSize: 13),
+                      ),
                       const Spacer(),
                       Text(
                         '${paidDate.day.toString().padLeft(2, '0')}/${paidDate.month.toString().padLeft(2, '0')}/${paidDate.year}',
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
                       ),
                       const SizedBox(width: 4),
                       const Icon(Icons.arrow_drop_down, color: Colors.grey),
@@ -705,12 +834,13 @@ class LoanDetailScreen extends ConsumerWidget {
                 items: const [
                   DropdownMenuItem(value: 'CASH', child: Text('Cash')),
                   DropdownMenuItem(
-                      value: 'BANK_TRANSFER', child: Text('Bank Transfer')),
+                    value: 'BANK_TRANSFER',
+                    child: Text('Bank Transfer'),
+                  ),
                 ],
                 onChanged: (value) =>
                     setSheetState(() => method = value ?? 'CASH'),
-                decoration:
-                    const InputDecoration(labelText: 'Payment Method'),
+                decoration: const InputDecoration(labelText: 'Payment Method'),
               ),
               const SizedBox(height: 24),
               Container(
@@ -738,28 +868,28 @@ class LoanDetailScreen extends ConsumerWidget {
                             setSheetState(() => isProcessing = true);
                             try {
                               final paymentService = PaymentService();
-                              final initiated =
-                                  await paymentService.initiatePayment(
-                                dueId: dueId,
-                                method: method,
-                                amount: amount,
-                              );
-                              final confirmed =
-                                  await paymentService.confirmPayment(
-                                initiated.payment.id,
-                                upiRefNumber:
-                                    refController.text.isNotEmpty
+                              final initiated = await paymentService
+                                  .initiatePayment(
+                                    dueId: dueId,
+                                    method: method,
+                                    amount: amount,
+                                  );
+                              final confirmed = await paymentService
+                                  .confirmPayment(
+                                    initiated.payment.id,
+                                    upiRefNumber: refController.text.isNotEmpty
                                         ? refController.text
                                         : null,
-                                paidAt: paidDate,
-                              );
+                                    paidAt: paidDate,
+                                  );
                               ref.invalidate(loanDetailProvider(loanId));
                               if (context.mounted) {
                                 Navigator.pop(sheetContext);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                        'Payment Confirmed! Bill No: ${confirmed.billNumber ?? "N/A"} (Receipt: ${confirmed.receiptNumber ?? "N/A"})'),
+                                      'Payment Confirmed! Bill No: ${confirmed.billNumber ?? "N/A"} (Receipt: ${confirmed.receiptNumber ?? "N/A"})',
+                                    ),
                                     backgroundColor: AppTheme.successColor,
                                     duration: const Duration(seconds: 4),
                                   ),
@@ -769,10 +899,11 @@ class LoanDetailScreen extends ConsumerWidget {
                               setSheetState(() => isProcessing = false);
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text(e.toString()),
-                                        backgroundColor:
-                                            AppTheme.errorColor));
+                                  SnackBar(
+                                    content: Text(e.toString()),
+                                    backgroundColor: AppTheme.errorColor,
+                                  ),
+                                );
                               }
                             }
                           },
@@ -782,7 +913,10 @@ class LoanDetailScreen extends ConsumerWidget {
                               height: 20,
                               width: 20,
                               child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white))
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
                           : const Text(
                               'Confirm Payment Received',
                               style: TextStyle(
@@ -813,14 +947,19 @@ class _WhiteStatCol extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: const TextStyle(color: Colors.white60, fontSize: 11)),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white60, fontSize: 11),
+        ),
         const SizedBox(height: 4),
-        Text(value,
-            style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 15)),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+          ),
+        ),
       ],
     );
   }
@@ -839,8 +978,10 @@ class _DetailRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+          Text(
+            label,
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+          ),
           Text(
             value,
             style: TextStyle(

@@ -1,7 +1,9 @@
 class AdminSummary {
   AdminSummary({
     required this.totalCustomers,
+    this.totalLoans = 0,
     required this.activeLoans,
+    this.closedLoans = 0,
     required this.overdueLoans,
     required this.totalDisbursed,
     required this.totalCollected,
@@ -13,7 +15,9 @@ class AdminSummary {
   });
 
   final int totalCustomers;
+  final int totalLoans;
   final int activeLoans;
+  final int closedLoans;
   final int overdueLoans;
   final num totalDisbursed;
   final num totalCollected;
@@ -27,7 +31,9 @@ class AdminSummary {
 
   factory AdminSummary.fromJson(Map<String, dynamic> json) => AdminSummary(
         totalCustomers: json['totalCustomers'] as int? ?? 0,
+        totalLoans: json['totalLoans'] as int? ?? 0,
         activeLoans: json['activeLoans'] as int? ?? 0,
+        closedLoans: json['closedLoans'] as int? ?? 0,
         overdueLoans: json['overdueLoans'] as int? ?? 0,
         totalDisbursed: _toNum(json['totalDisbursed'] ?? 0),
         totalCollected: _toNum(json['totalCollected'] ?? 0),

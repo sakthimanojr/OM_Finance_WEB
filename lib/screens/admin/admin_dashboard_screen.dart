@@ -163,10 +163,9 @@ class AdminDashboardScreen extends ConsumerWidget {
                               SummaryCard(
                                 icon: Icons.assignment_outlined,
                                 label: 'All Loans',
-                                value: '${summary.totalCustomers}',
+                                value: '${summary.totalLoans}',
                                 color: AppTheme.primaryColor,
-                                onTap: () => context
-                                    .push('/admin/customers?status=ACTIVE'),
+                                onTap: () => context.push('/admin/loans'),
                               ),
                               SummaryCard(
                                 icon: Icons.assignment_outlined,

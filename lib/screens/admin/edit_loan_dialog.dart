@@ -13,8 +13,8 @@ class EditLoanDialog extends ConsumerStatefulWidget {
   const EditLoanDialog({super.key, required this.loan});
   final Loan loan;
 
-  static Future<bool?> show(BuildContext context, Loan loan) {
-    return showDialog<bool>(
+  static Future<dynamic> show(BuildContext context, Loan loan) {
+    return showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => EditLoanDialog(loan: loan),
@@ -209,6 +209,71 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
     }
   }
 
+  Future<void> _confirmDeleteLoan() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: AppTheme.errorColor),
+            SizedBox(width: 8),
+            Text('Delete Loan?'),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to permanently delete Loan #${widget.loan.loanNumber ?? ""}? '
+          'All dues and payment records associated with this loan will be permanently deleted. '
+          'This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.errorColor,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(dialogCtx, true),
+            child: const Text('Delete Permanently'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() {
+      _isSaving = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await LoanService().deleteLoan(widget.loan.id);
+      ref.invalidate(loanDetailProvider(widget.loan.id));
+      ref.invalidate(loanListProvider(widget.loan.customerId));
+      ref.invalidate(adminLoanListProvider);
+      ref.invalidate(customerDetailProvider(widget.loan.customerId));
+      ref.invalidate(customerListProvider);
+
+      if (mounted) {
+        Navigator.of(context).pop('deleted');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Loan #${widget.loan.loanNumber ?? ""} deleted successfully'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isSaving = false;
+        _errorMessage = e.toString();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final preview = _calculatePreview();
@@ -284,6 +349,12 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
                             ],
                           ),
                         ),
+                        if (isSuperAdmin)
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline_rounded, color: AppTheme.errorColor),
+                            tooltip: 'Delete Loan Permanently',
+                            onPressed: _isSaving ? null : _confirmDeleteLoan,
+                          ),
                         IconButton(
                           icon: const Icon(Icons.close, color: Colors.grey),
                           onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
@@ -865,6 +936,23 @@ class _EditLoanDialogState extends ConsumerState<EditLoanDialog> {
                         ),
                       ],
                     ),
+                    if (isSuperAdmin) ...[
+                      const SizedBox(height: 14),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.errorColor,
+                          side: BorderSide(color: AppTheme.errorColor.withValues(alpha: 0.5)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        icon: const Icon(Icons.delete_forever_rounded, color: AppTheme.errorColor, size: 20),
+                        label: const Text(
+                          'Delete Loan Permanently',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.errorColor),
+                        ),
+                        onPressed: _isSaving ? null : _confirmDeleteLoan,
+                      ),
+                    ],
                   ],
                 ),
               ),

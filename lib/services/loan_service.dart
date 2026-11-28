@@ -135,6 +135,14 @@ class LoanService {
     }
   }
 
+  Future<void> deleteLoan(String loanId) async {
+    try {
+      await _dio.delete('${ApiConstants.loans}/$loanId');
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
   Future<Map<String, dynamic>> batchCloseLoans({
     required List<String> loanIds,
     String paymentMethod = 'BANK_TRANSFER',
