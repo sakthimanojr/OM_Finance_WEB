@@ -165,7 +165,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                                 label: 'All Loans',
                                 value: '${summary.totalLoans}',
                                 color: AppTheme.primaryColor,
-                                onTap: () => context.push('/admin/loans'),
+                                onTap: () => context.push('/admin/customers'),
                               ),
                               SummaryCard(
                                 icon: Icons.assignment_outlined,
@@ -173,7 +173,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                                 value: '${summary.activeLoans}',
                                 color: AppTheme.primaryLight,
                                 onTap: () =>
-                                    context.push('/admin/loans?status=ACTIVE'),
+                                    context.push('/admin/customers?status=ACTIVE'),
                               ),
                               SummaryCard(
                                 icon: Icons.warning_amber_rounded,

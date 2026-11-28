@@ -123,8 +123,8 @@ class _LoanListScreenState extends ConsumerState<LoanListScreen> {
                 scrollDirection: Axis.horizontal,
                 children: [
                   _FilterChip(
-                    label: 'All Loans',
-                    isSelected: currentFilter == null || currentFilter == 'ALL',
+                    label: 'All Active',
+                    isSelected: currentFilter == null,
                     onTap: () => ref.read(loanStatusFilterProvider.notifier).state = null,
                   ),
                   ...['ACTIVE', 'OVERDUE', 'CLOSED', 'COMPLETED'].map(
