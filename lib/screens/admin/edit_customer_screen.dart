@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/customer_model.dart';
 import '../../providers/customer_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../services/customer_service.dart';
 import 'customer_form_widget.dart';
 
@@ -99,8 +100,70 @@ class _EditCustomerScreenState extends ConsumerState<EditCustomerScreen> {
     }
   }
 
+  Future<void> _deleteCustomer() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: AppTheme.errorColor),
+            SizedBox(width: 8),
+            Text('Delete Customer?'),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to permanently delete "${widget.customer.name}" and all associated records? This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete Permanently', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _loading = true);
+    try {
+      await CustomerService().deleteCustomer(widget.customer.id);
+      ref.invalidate(customerListProvider);
+      ref.invalidate(customerDetailProvider(widget.customer.id));
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: AppTheme.successColor,
+            content: Text('Customer profile deleted successfully'),
+          ),
+        );
+        Navigator.of(context).pop(true);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppTheme.errorColor,
+            content: Text('Delete failed: $e'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isSuperAdmin = ref.watch(authProvider).user?.isSuperAdmin ?? false;
+
     return Scaffold(
       backgroundColor: AppTheme.surfaceLight,
       appBar: AppBar(
@@ -116,7 +179,13 @@ class _EditCustomerScreenState extends ConsumerState<EditCustomerScreen> {
                     color: Colors.white, strokeWidth: 2),
               ),
             )
-          else
+          else ...[
+            if (isSuperAdmin)
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.white),
+                tooltip: 'Delete Customer Profile',
+                onPressed: _deleteCustomer,
+              ),
             TextButton.icon(
               onPressed: _save,
               icon: const Icon(Icons.save_rounded, color: Colors.white, size: 18),
@@ -125,6 +194,7 @@ class _EditCustomerScreenState extends ConsumerState<EditCustomerScreen> {
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
               ),
             ),
+          ],
         ],
       ),
       body: CustomerFormWidget(

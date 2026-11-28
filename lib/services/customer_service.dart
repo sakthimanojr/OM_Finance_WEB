@@ -71,4 +71,12 @@ class CustomerService {
       throw ApiException.fromDioError(e);
     }
   }
+
+  Future<void> deleteCustomer(String id) async {
+    try {
+      await _dio.delete('${ApiConstants.customers}/$id');
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
 }

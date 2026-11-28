@@ -192,7 +192,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                               if (targetLoanId != null && targetLoanId.isNotEmpty) {
                                 context.push('/admin/loans/$targetLoanId');
                               } else {
-                                context.push('/admin/loans/new?customerId=${customer.id}');
+                                context.push('/admin/customers/${customer.id}');
                               }
                             },
                             child: Padding(

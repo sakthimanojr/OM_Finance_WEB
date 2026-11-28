@@ -11,6 +11,7 @@ import '../../providers/auth_provider.dart';
 import '../shared/documents_section.dart';
 import 'edit_customer_screen.dart';
 import 'edit_loan_dialog.dart';
+import '../../services/customer_service.dart';
 
 
 class CustomerDetailScreen extends ConsumerWidget {
@@ -52,6 +53,12 @@ class CustomerDetailScreen extends ConsumerWidget {
                   onPressed: () => context.push(
                       '/admin/customers/$customerId/notifications?name=${Uri.encodeComponent(customer.name)}'),
                 ),
+                if (isSuperAdmin)
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                    tooltip: 'Delete Customer Profile',
+                    onPressed: () => _confirmDeleteCustomer(context, ref, customer.id, customer.name),
+                  ),
               ],
             ),
             orElse: () => const SizedBox.shrink(),
@@ -467,5 +474,60 @@ class CustomerDetailScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDeleteCustomer(BuildContext context, WidgetRef ref, String id, String name) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: AppTheme.errorColor),
+            SizedBox(width: 8),
+            Text('Delete Customer?'),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to permanently delete "$name" and all associated records? This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete Permanently', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        await CustomerService().deleteCustomer(id);
+        ref.invalidate(customerListProvider);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              backgroundColor: AppTheme.successColor,
+              content: Text('Customer deleted successfully'),
+            ),
+          );
+          context.pop();
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: AppTheme.errorColor,
+              content: Text('Failed to delete customer: $e'),
+            ),
+          );
+        }
+      }
+    }
   }
 }

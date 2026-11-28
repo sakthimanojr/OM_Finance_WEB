@@ -159,6 +159,13 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_loanNumberController.text.trim().isEmpty) {
+      setState(() {
+        _error = 'Loan number is strictly required to create a loan.';
+        _isSubmitting = false;
+      });
+      return;
+    }
     setState(() {
       _isSubmitting = true;
       _error = null;
@@ -627,10 +634,11 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                   TextFormField(
                     controller: _loanNumberController,
                     decoration: const InputDecoration(
-                      labelText: 'Loan Number',
-                      hintText: 'Auto-suggested (e.g. LN-004)',
+                      labelText: 'Loan Number *',
+                      hintText: 'e.g. LN-004',
                       prefixIcon: Icon(Icons.numbers, size: 20),
                     ),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Loan number is required' : null,
                   ),
                   const SizedBox(height: 16),
 

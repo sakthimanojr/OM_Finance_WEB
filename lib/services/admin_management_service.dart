@@ -108,4 +108,13 @@ class AdminManagementService {
       throw ApiException.fromDioError(e);
     }
   }
+
+  Future<Map<String, dynamic>> cleanupInvalidLoans() async {
+    try {
+      final response = await _dio.post('/admin/cleanup-invalid-loans');
+      return response.data['data'] as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
 }
